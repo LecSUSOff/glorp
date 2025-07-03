@@ -17,7 +17,7 @@
 
 Glorp combines the safety of static types with a clean, modern syntax. Its killer feature is the `watch` keyword, allowing you to build reactive, event-driven applications with zero boilerplate.
 
-For better experience, join our [**Discor**](https://discord.gg/nbNMvvc9) community
+For better experience, join our [**Discord**](https://discord.gg/nbNMvvc9) community
 
 ---
 
