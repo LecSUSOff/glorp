@@ -110,7 +110,7 @@ Finished!
 ```Notice how the reactive block was triggered automatically on each assignment. No callbacks, no boilerplate. **Just Glorp.**
 
 ---
-
+```
 ## 🗺️ Roadmap
 
 Glorp is actively developed. Here's what's next:
