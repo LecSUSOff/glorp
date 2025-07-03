@@ -116,7 +116,6 @@ Finished!
 Glorp is actively developed. Here's what's next:
 
 -   [ ] Better and more helpful error messages.
--   [ ] Official builds for Linux and macOS.
 -   [ ] A core standard library (string utils, file I/O).
 -   [ ] Syntax highlighting for VS Code.
 
@@ -124,8 +123,8 @@ Glorp is actively developed. Here's what's next:
 
 Contributions are welcome!
 
--   **Find a bug?** Open an [Issue](https://github.com/YOUR_USERNAME/YOUR_REPO/issues).
--   **Have an idea?** Start a [Discussion](https://github.com/YOUR_USERNAME/YOUR_REPO/discussions).
+-   **Find a bug?** Open an [Issue](https://github.com/LecSUSOff/glorp/issues).
+-   **Have an idea?** Start a [Discussion](https://github.com/LecSUSOff/glorp/discussions).
 -   **Want to code?** Fork the repo and submit a **Pull Request**.
 
 This project is licensed under the MIT License.
