@@ -28,7 +28,6 @@ theme:
         icon: material/brightness-4
         name: Switch to light mode
   features:
-    - navigation.tabs # Показывает разделы верхнего уровня как вкладки
     - navigation.top # Добавляет кнопку "Наверх"
     - content.code.copy # Кнопка "Копировать" для блоков кода
     - search.suggest # Автодополнение в поиске
