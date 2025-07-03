@@ -1,12 +1,12 @@
 # --- Основная информация о сайте ---
 site_name: Glorp Language
 site_url: https://ВАШ_ЛОГИН.github.io/ВАШ_РЕПОЗИТОРИЙ/ # Замените на реальный URL
-site_author: 'Ваше Имя'
-copyright: 'Copyright © 2024 Ваше Имя'
+site_author: 'Alexey'
+copyright: 'Copyright © 2025 Alexey Zhukovski'
 
 # --- Ссылка на репозиторий (добавляет иконку GitHub) ---
-repo_url: https://github.com/ВАШ_ЛОГИН/ВАШ_РЕПОЗИТОРИЙ/ # Замените
-repo_name: 'glorp-lang/glorp'
+repo_url: https://github.com/LecSUSOff/glorp/ # Замените
+repo_name: 'glorp'
 
 # --- Тема оформления и ее настройки ---
 theme:
