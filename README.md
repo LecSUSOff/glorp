@@ -2,7 +2,7 @@
 
 # Glorp 🦉
 
-**A simple, statically-typed language with built-in reactivity that runs on the Python ecosystem.**
+**A simple, statically-typed language with built-in reactivity.**
 
 <p>
   <a href="https://opensource.org/licenses/MIT">
@@ -24,7 +24,6 @@ Glorp combines the safety of static types with a clean, modern syntax. Its kille
 -   ✅ **Simple & Clean Syntax:** Write readable code, free from clutter.
 -   🔒 **Static Typing:** Catch errors before you run, not after.
 -   ✨ **Built-in Reactivity:** Use `watch` to create code that magically responds to data changes.
--   🐍 **Python Ecosystem:** Get full, zero-cost access to every Python library.
 
 ---
 
