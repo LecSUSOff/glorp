@@ -36,22 +36,3 @@ theme:
 # --- Структура навигации (меню сайта) ---
 nav:
   - 'Home': 'index.md'
-  - 'Getting Started':
-    - 'Installation': 'getting-started/installation.md'
-    - 'Your First Program': 'getting-started/hello-world.md'
-  - 'Language Guide':
-    - 'Basics': 'guide/basics.md'
-    - 'Functions': 'guide/functions.md'
-    - 'Reactivity (watch)': 'guide/watch.md'
-    - 'Control Flow': 'guide/control-flow.md'
-  - 'About': 'about.md'
-
-# --- Расширения для Markdown (добавляют "суперсилы") ---
-markdown_extensions:
-  - admonition # Блоки "!!! note", "!!! warning" и т.д.
-  - pymdownx.details # Сворачиваемые блоки
-  - pymdownx.superfences # Улучшенные блоки кода
-  - pymdownx.highlight:
-      anchor_linenums: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets # Возможность вставлять файлы
