@@ -273,7 +273,7 @@ The `private` keyword makes a variable accessible only within the file it is dec
 
 ## 9. Built-in Functions
 
-Glorp provides a small set of built-in functions for basic I/O.
+Glorp provides a set of built-in functions for basic operations.
 
 ### 9.1. `out()`
 
@@ -289,4 +289,33 @@ Clears the terminal screen (by sending ANSI escape codes).
 
 ```glorp
 clear()
+```
+
+## 9.3. Error Handling with `try/catch`
+
+Glorp introduces a `try`/`catch` control structure to handle potential runtime errors during execution. This feature allows developers to encapsulate risky operations and define fallback logic without disrupting program flow.
+
+```glorp
+try {
+    <body> // Code that may fail
+} catch {
+    <body> // Code to run if an error is thrown
+}
+```
+
+- The `try` block wraps the potentially error-prone logic.
+- If an error occurs inside the `try`, execution jumps to the corresponding `catch` block.
+- If no error occurs, the `catch` block is skipped.
+
+```glorp
+fn Null Main() {
+    try {
+        let Int result = 10 / 0
+        out("This will not be printed.")
+    } catch {
+        out("An error occurred during division.", exception) //You can use 'excpetion' variable to refer to the exception object
+    }
+
+    out("Program continues after try/catch.")
+}
 ```
