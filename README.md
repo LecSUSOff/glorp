@@ -107,10 +107,9 @@ Counter changed to: 1
 Counter changed to: 2
 Counter changed to: 3
 Finished!
-```Notice how the reactive block was triggered automatically on each assignment. No callbacks, no boilerplate. **Just Glorp.**
-
----
 ```
+*Notice how the reactive block was triggered automatically on each assignment. No callbacks, no boilerplate.*
+
 ## 🗺️ Roadmap
 
 Glorp is actively developed. Here's what's next:
