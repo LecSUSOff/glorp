@@ -11,8 +11,6 @@ Glorp is a statically-typed, pragmatic programming language. It is designed for 
 
 This document serves as the official reference for the Glorp language syntax and features.
 
-*Glorp aims to provide the safety of static types and the power of modern language features.*
-
 ## 1. Syntax Fundamentals
 
 ### 1.1. Comments
