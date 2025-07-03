@@ -2,7 +2,7 @@
   <h1>Glorp Language Reference</h1>
   <p><strong>The official language documentation for Glorp.</strong></p>
 </div>
-
+<iframe src="https://discord.com/widget?id=1390350998236696686&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
 ---
 
 ## Introduction
