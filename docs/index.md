@@ -291,7 +291,7 @@ Clears the terminal screen (by sending ANSI escape codes).
 clear()
 ```
 
-## 9.3. Error Handling with `try/catch`
+### 9.3. Error Handling with `try/catch`
 
 Glorp introduces a `try`/`catch` control structure to handle potential runtime errors during execution. This feature allows developers to encapsulate risky operations and define fallback logic without disrupting program flow.
 
