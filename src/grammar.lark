@@ -1,0 +1,88 @@
+start: global_statement+
+
+global_statement: import_stmt | var_decl | func_short | func_long | private | watch_stmt
+
+local_statement: var_decl | return_stmnt | out_stmnt | clear | if_stmnt | while_stmnt | for_loop | watch_stmt | try_stmt
+ 
+import_stmt: "use" name
+
+var_decl: "let" TYPE name ("=" expression)?
+private: "private" TYPE name "=" expression
+try_stmt: "try" "{" body "}" "catch" "{" body "}"
+func_short: "fn" TYPE name "(" parameters? ")" "=>" expression
+watch_stmt: "watch" TYPE NAME "=" expression "->" (local_statement | ("{" body "}"))
+return_stmnt: "=>" expression
+
+func_long: "fn" TYPE name "(" parameters? ")" "{" body "}"
+
+if_stmnt: "if" expression "{" body "}" ("elif" expression "{" body "}")* ("else" "{" body "}")?
+while_stmnt: "while" expression "{" body "}"
+for_loop: "for" "let" TYPE NAME "=" expression "to" expression "{" body "}"
+
+out_stmnt: "out(" [arguments] ")"
+clear: "clear()"
+body: local_statement*
+
+TYPE: NAME
+
+parameters: TYPE name ("," TYPE name)*
+expression: logic_or
+
+logic_or: logic_and ("or" logic_and)*
+logic_and: logic_not ("and" logic_not)*
+logic_not: "not" logic_not -> logic_unary_not
+         | comparison
+comparison: arith_exp (op_bool arith_exp)?
+
+arith_exp: term (op_exp term)*
+term: factor (op_term factor)*
+factor: NUMBER
+      | STRING
+      | name
+      | "(" expression ")"
+      | call
+      | array
+      | element
+
+?op_exp: OP_ADD | OP_SUB
+OP_ADD: "+"
+OP_SUB: "-"
+
+?op_term: OP_MUL | OP_DIV | OP_POW
+OP_MUL: "*"
+OP_DIV: "/"
+OP_POW: "^"
+
+?op_bool: OP_EQ | OP_NE | OP_GT | OP_LT | OP_GE | OP_LE
+OP_EQ: "=="
+OP_NE: "!="
+OP_GT: ">"
+OP_LT: "<"
+OP_GE: ">="
+OP_LE: "<="
+
+call: name "(" [arguments] ")"
+
+array: "[" [array_elements] "]"
+element: NAME "[" NUMBER "]"
+
+name: NAME("."NAME)*
+
+arguments: expression ("," expression)*
+array_elements: expression ("," expression)*
+
+%import common.CNAME
+%import common.ESCAPED_STRING
+
+%import common.CNAME -> NAME
+%import common.SIGNED_NUMBER -> NUMBER
+%import common.ESCAPED_STRING -> STRING
+%import common.WS
+
+SINGLE_LINE_COMMENT: /\/\/[^\n]*/
+MULTI_LINE_COMMENT_STD: /\/\*[\s\S]*?\*\//
+
+%ignore SINGLE_LINE_COMMENT
+%ignore MULTI_LINE_COMMENT_STD
+%import common.WS
+%ignore WS
