@@ -33,7 +33,7 @@ Get up and running in less than a minute.
 
 #### 1. Download
 
-Grab the latest `glorp` executable from the [**Releases**](https://github.com/YOUR_USERNAME/YOUR_REPO/releases) page.
+Grab the latest `glorp` executable from the [**Releases**](https://github.com/LecSUSOff/glorp/releases) page.
 
 #### 2. Install
 
