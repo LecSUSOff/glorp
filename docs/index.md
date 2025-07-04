@@ -1,13 +1,20 @@
+Отличная идея обновить документацию! Это критически важно для любого проекта. Я взял твою текущую документацию и обновил её, чтобы отразить все изменения в версии 1.0.3, а также улучшил структуру и примеры для большей ясности.
+
+Вот обновленная версия.
+
+---
+
 <div align="center">
   <h1>Glorp Language Reference</h1>
-  <p><strong>The official language documentation for Glorp.</strong></p>
+  <p><strong>The official language documentation for Glorp v1.0.3.</strong></p>
 </div>
 <iframe src="https://discord.com/widget?id=1390350998236696686&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
+
 ---
 
 ## Introduction
 
-Glorp is a statically-typed, pragmatic programming language. It is designed for clarity and developer productivity, featuring a simple syntax and a powerful, built-in reactivity system.
+Glorp is a statically-typed, pragmatic programming language. It is designed for clarity and developer productivity, featuring a C-like syntax, a powerful reactivity system, and the ability to transpile directly to Python.
 
 This document serves as the official reference for the Glorp language syntax and features.
 
@@ -18,11 +25,10 @@ This document serves as the official reference for the Glorp language syntax and
 Comments are ignored by the compiler and are used to leave notes in the code. Glorp supports two types of comments.
 
 ```glorp
-// This is a single-line comment. It extends to the end of the line.
+// This is a single-line comment.
 
 /*
   This is a multi-line, or block, comment.
-  It can span multiple lines.
 */
 ```
 
@@ -35,14 +41,17 @@ Glorp is statically typed. You must declare the type of every variable. The buil
 | `Int`  | A signed integer.          | `42`, `-10`       |
 | `Str`  | A string of text.          | `"Hello, Glorp!"` |
 | `Bool` | A boolean value.           | `true`, `false`   |
-| `List` | An ordered collection.     | `[1, 2, 3]`       |
-| `Null` | Represents the absence of a value. | Used as a return type for functions that do not return a value. |
+| `List` | An ordered collection (array). | `[1, "a", true]`  |
+| `Dict` | A collection of key-value pairs. | `{"name": "Alex", "age": 30}` |
+| `Null` | Represents the absence of a value. | Used as a return type for functions that do not return anything. |
 
 ---
 
-## 2. Variables
+## 2. Variables and Re-assignment
 
-Variables are declared using the `let` keyword. They must be initialized with a value of the specified type.
+### 2.1. Declaration with `let`
+
+Variables are declared for the first time using the `let` keyword. They must be given a type and can be initialized with a value.
 
 **Syntax:**
 `let <Type> <name> = <expression>`
@@ -52,15 +61,27 @@ Variables are declared using the `let` keyword. They must be initialized with a 
 let Str welcome_message = "Welcome to the language guide!"
 let Int user_count = 100
 let List initial_scores = [100, 200, 300]
+let Dict user_data = {"id": 1, "active": true}
 ```
 
-Variables can be reassigned later in the code, but their type cannot be changed.
+### 2.2. Re-assignment with `set`
 
+To change the value of an *existing* variable, use the `set` keyword. You do not need to specify the type again. Using `let` to declare a variable that already exists will cause an error.
+
+**Syntax:**
+`set <name> = <expression>`
+
+**Example:**
 ```glorp
+// Correct usage
 let Int my_var = 10
-let Int my_var = 20 // This is valid
+out(my_var) // Prints 10
 
-// let Int my_var = "hello" // This will cause a type error
+set my_var = 20
+out(my_var) // Prints 20
+
+// Incorrect usage
+// let Int my_var = 30 // Error: 'my_var' has already been declared.
 ```
 
 ---
@@ -71,16 +92,17 @@ Functions are a core building block for reusable code. Glorp supports two syntax
 
 ### 3.1. Block Body Functions
 
-Used for functions with multiple statements or complex logic.
+Used for functions with multiple statements. The `=>` symbol is used inside the body to return a value.
 
 **Syntax:**
 `fn <ReturnType> <name>(<parameters>) { <body> }`
 
 ```glorp
-fn Null greet(Str name) {
-    let Str message = "Hello, " + name + "!"
-    out(message)
-    // No return value, so the type is Null
+fn Str get_status(Int code) {
+    if code == 200 {
+        => "OK"
+    }
+    => "Error"
 }
 ```
 
@@ -96,20 +118,6 @@ Used for simple, single-expression functions. The result of the expression is im
 fn Int add(Int a, Int b) => a + b
 ```
 
-### 3.3. Parameters and Return
-
-- **Parameters:** A comma-separated list of `Type name` pairs within the parentheses.
-- **Return:** The `=>` symbol is used to return a value from within a block body function.
-
-```glorp
-fn Int check_age(Int age) {
-    if age >= 18 {
-        => 1 // Return 1 if adult
-    }
-    => 0 // Return 0 otherwise
-}
-```
-
 ---
 
 ## 4. Reactivity: The `watch` Statement
@@ -119,31 +127,20 @@ The `watch` keyword is Glorp's most distinctive feature. It declares a variable 
 **Syntax:**
 `watch <Type> <name> = <initial_value> -> <handler>`
 
-The handler can be a single statement or a block of code in curly braces.
+The handler can be a single statement or a block of code in curly braces. To update a watched variable, use the `set` keyword.
 
 **Example:**
 ```glorp
 fn Null Main() {
-    // 1. Declare a watched variable `counter`.
-    // 2. The code in the { ... } block will run every time
-    //    the value of `counter` is updated.
     watch Int counter = 0 -> {
-        out("Value changed! Counter is now: ", counter)
-        if counter > 3 {
-            out("Counter has exceeded 3!")
-        }
+        out("Counter changed! It's now: ", counter)
     }
 
     out("Program start.")
     
-    let Int counter = 1  // Handler runs. Output: "Value changed! Counter is now: 1"
-    let Int counter = 2  // Handler runs. Output: "Value changed! Counter is now: 2"
-    // No change, no handler execution
-    let Int counter = 2
-    
-    // Using a single-statement handler
-    watch Str name = "Guest" -> out("Name changed to: ", name)
-    let Str name = "Admin" // Handler runs. Output: "Name changed to: Admin"
+    set counter = 1  // Handler runs. Output: "Counter changed! It's now: 1"
+    set counter = 2  // Handler runs. Output: "Counter changed! It's now: 2"
+    set counter = 2  // Handler does NOT run, because the value didn't change.
 }
 ```
 ---
@@ -174,7 +171,7 @@ Repeats a block of code as long as a condition is `true`.
 let Int i = 1
 while i <= 5 {
     out("Current value of i: ", i)
-    let Int i = i + 1
+    set i = i + 1
 }
 ```
 
@@ -198,94 +195,172 @@ for let Int i = 1 to 5 {
 
 Glorp follows a standard order of operations. Use parentheses `()` to enforce a specific evaluation order.
 
-| Category      | Operators                                   | Associativity |
-|---------------|---------------------------------------------|---------------|
-| **Power**     | `^`                                         | Right         |
-| **Term**      | `*`, `/`                                    | Left          |
-| **Arithmetic**| `+`, `-`                                    | Left          |
-| **Comparison**| `==`, `!=`, `>`, `<`, `>=`, `<=`            | Left          |
-| **Logical**   | `not` (prefix), `and` (infix), `or` (infix) | Left          |
-
-**Example:**
-```glorp
-let Int result = (10 + 2) * 3 // result is 36
-let Bool is_true = (5 > 3) and (10 != 20) // is_true is true
-```
+| Category      | Operators                                   |
+|---------------|---------------------------------------------|
+| **Power**     | `^`                                         |
+| **Term**      | `*`, `/`                                    |
+| **Arithmetic**| `+`, `-`                                    |
+| **Comparison**| `==`, `!=`, `>`, `<`, `>=`, `<=`            |
+| **Logical**   | `not` (prefix), `and` (infix), `or` (infix) |
 
 ---
 
 ## 7. Data Structures
 
-### 7.1. Arrays
+### 7.1. Lists (Arrays)
 
-Arrays are ordered, zero-indexed collections of elements. They are defined using square brackets.
+Lists are ordered, zero-indexed collections of elements, defined using square brackets `[]`.
+
+```glorp
+let List names = ["Alice", "Bob", "Charlie"]
+let List empty_list = []
+
+// Element Access (zero-indexed)
+let Str first_name = names[0] // "Alice"
+out(first_name)
+```
+
+### 7.2. Dictionaries
+
+Dictionaries are unordered collections of key-value pairs, defined using curly braces `{}`. Keys are typically strings.
 
 ```glorp
 // Declaration
-let List names = ["Alice", "Bob", "Charlie"]
-let List numbers =
-let List empty_list = []
+let Dict user = {"name": "Bob", "id": 42, "is_active": true}
+let Dict empty_dict = {}
 
 // Element Access
-let Str first_name = names // "Alice"
-out(first_name)
+let Str user_name = user["name"] // "Bob"
+out(user_name)
 ```
+
+---
+
+Отлично, это очень важный и неинтуитивный аспект, который обязательно нужно объяснить в документации. Пользователи, привыкшие к другим языкам, точно столкнутся с этим и будут удивлены.
+
+Я добавлю новый раздел `8.4. A Peculiarity of Module Scopes` (Особенность областей видимости модулей) и подробно, с примерами, объясню это поведение.
+
+Вот обновленный раздел 8 целиком.
 
 ---
 
 ## 8. Modules and Scope
 
-### 8.1. Modules (`use`)
+Glorp encourages code organization by allowing you to split your code into multiple files, which can then be used as modules. This system helps you create reusable components and manage the complexity of larger projects.
 
-You can split your code into multiple `.glorp` files and import them using the `use` statement. This treats the imported file as a class-like namespace.
+### 8.1. Creating and Using Modules (`use`)
 
-**`math.glorp`:**
+Any `.glorp` file can act as a module. You can import one file into another using the `use` statement. When you do this, all public, top-level `let` variables and `fn` functions from the imported file become available under a namespace that matches the filename.
+
+**`config.glorp`:**
 ```glorp
-// This function is public by default
-fn Int add(Int a, Int b) => a + b
+let Str API_ENDPOINT = "https://api.example.com"
 
-// This variable is private and will not be accessible from other modules
-private Str version = "1.0"
+fn Bool is_valid_port(Int port) {
+    => (port > 1024) and (port < 65535)
+}
 ```
 
 **`main.glorp`:**
 ```glorp
-// Import the math module
-use math
+use config
 
 fn Null Main() {
-    // Call the function using the module's name as a namespace
-    let Int sum = math.add(5, 7) // sum is 12
-    out(sum)
-
-    // out(math.version) // This would cause an error
+    out("Connecting to: ", config.API_ENDPOINT)
+    if config.is_valid_port(8080) {
+        out("Port 8080 is valid.")
+    }
 }
 ```
 
-### 8.2. Private Members
+### 8.2. Private Variables for Internal State
 
-The `private` keyword makes a variable accessible only within the file it is declared in. It cannot be accessed from a module that `use`s it.
+The `private` keyword allows you to define variables that are strictly confined to the file they are declared in. They are used for internal calculations and are completely inaccessible from outside the module file.
 
 **Syntax:**
 `private <Type> <name> = <expression>`
 
+(For a detailed explanation of Glorp's strict privacy model, see section 8.4)
+
+### 8.3. A Peculiarity of Module Scopes: Self-Referencing
+
+Glorp's module system has a unique characteristic that developers must be aware of. When you define functions inside a module, they do not automatically have access to other members (variables or functions) of the same module. **To access another member of the same module, you must explicitly use the module's own name as a namespace.**
+
+This is best explained with an example.
+
+Let's consider a module named `math.glorp`.
+
+**`math.glorp`:**
+```glorp
+let Int PI_APPROX = 3
+
+// --- INCORRECT ---
+// This function will fail because 'PI_APPROX' is not in its local scope.
+// fn Int get_pi_incorrect() => PI_APPROX 
+
+// --- CORRECT ---
+// To access PI_APPROX from within the same module, you must qualify
+// it with the module's name: 'math'.
+fn Int get_pi() {
+    => math.PI_APPROX
+}
+
+fn Int add_one_to_pi() {
+    // This also requires using the 'math' namespace to call another
+    // function in the same module.
+    let Int pi_val = math.get_pi()
+    => pi_val + 1
+}
+```
+
+**Why does it work this way?**
+
+This behavior is a direct result of how Glorp transpiles modules. When you write `use math`, the `math.glorp` file is processed and converted into a Python `class` named `math`.
+
+*   `let PI_APPROX = 3` becomes a class attribute `math.PI_APPROX`.
+*   `fn Int get_pi()...` becomes a method within the `math` class.
+
+From inside a method in Python, you cannot directly access a class attribute by its name alone; you need to reference it through the class (or an instance, e.g., `self`). Glorp simplifies this by requiring you to always use the static class name (`math`). This makes the code consistent and explicit about where a variable or function is coming from, even when working inside the module itself.
+
+**Rule of Thumb:** When inside a file `my_module.glorp`, always use `my_module.member` to access another top-level `member` (variable or function) defined in that same file.
+
+### 8.4. Understanding Glorp's Strict Privacy Model
+
+Glorp's privacy model for variables is stricter than in many other languages. Think of a private variable not as a "private field" of a class, but as a **temporary, file-scoped constant**. It exists only during the initial processing of the module and is erased afterwards.
+
+This means a private variable **cannot be accessed by any functions**, not even public functions within the same module, because the variable is deleted before the functions can be called.
+
+**`secret_key_manager.glorp`:**
+```glorp
+// A private, internal master key. It's only used right here.
+private Str MASTER_KEY = "super-secret-master-string"
+
+// A public variable whose value is DERIVED from the private key.
+// This calculation happens once when the module is loaded.
+let Str PUBLIC_API_TOKEN = MASTER_KEY + "-public-token"
+
+// This function would FAIL if uncommented, because by the time it is called,
+// MASTER_KEY no longer exists.
+// fn Str get_master_key_again() => secret_key_manager.MASTER_KEY
+```
+
+This design ensures that sensitive information is completely erased and cannot be leaked or accidentally modified after the module is initialized. Use `private` variables for one-time setup calculations whose results are stored in public variables.
+
 ---
 
-## 9. Built-in Functions
-
-Glorp provides a set of built-in functions for basic operations.
+## 9. Built-in Functions and Error Handling
 
 ### 9.1. `out()`
 
-Prints one or more values to the console. Arguments are separated by commas.
+Prints one or more values to the console.
 
 ```glorp
-out("The answer is:", 42) // Prints "The answer is: 42"
+out("The answer is:", 42)
 ```
 
 ### 9.2. `clear()`
 
-Clears the terminal screen (by sending ANSI escape codes).
+Clears the terminal screen.
 
 ```glorp
 clear()
@@ -293,19 +368,18 @@ clear()
 
 ### 9.3. Error Handling with `try/catch`
 
-Glorp introduces a `try`/`catch` control structure to handle potential runtime errors during execution. This feature allows developers to encapsulate risky operations and define fallback logic without disrupting program flow.
+Glorp provides a `try`/`catch` structure to handle potential runtime errors.
 
+**Syntax:**
 ```glorp
 try {
-    <body> // Code that may fail
+    // Code that may fail
 } catch {
-    <body> // Code to run if an error is thrown
+    // Code to run if an error occurs
 }
 ```
 
-- The `try` block wraps the potentially error-prone logic.
-- If an error occurs inside the `try`, execution jumps to the corresponding `catch` block.
-- If no error occurs, the `catch` block is skipped.
+The special variable `exception` is available inside the `catch` block to inspect the error.
 
 ```glorp
 fn Null Main() {
@@ -313,9 +387,8 @@ fn Null Main() {
         let Int result = 10 / 0
         out("This will not be printed.")
     } catch {
-        out("An error occurred during division.", exception) //You can use 'excpetion' variable to refer to the exception object
+        out("An error occurred!", exception)
     }
-
     out("Program continues after try/catch.")
 }
 ```
