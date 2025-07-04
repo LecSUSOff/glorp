@@ -4,11 +4,7 @@ from typeguard import typechecked
 import types
 import linecache
 
-VERSION = "1.0.1"
-
-if sys.argv[1] in ['--ver', '-v', '--version']:
-    print(VERSION)
-    sys.exit()
+VERSION = "1.0.3"
 
 prefix = """
 from typeguard import typechecked
@@ -31,9 +27,12 @@ class _GlorpWatcher:
 """
 
 grammar = open('grammar.lark', encoding='utf8').read()
+
 parser = Lark(grammar)
 
 class Glorp(Transformer):
+    vartype: dict[str, str] = {}
+
     def __init__(self):
         super().__init__()
         self.stats = []
@@ -50,6 +49,7 @@ class Glorp(Transformer):
             case "Null": return "None"
             case "Bool": return "bool"
             case "List": return "list"
+            case "Dict": return "dict"
         print(f"Unknown type '{glorp_type}' on position {type_token.line}:{type_token.column}")
         exit()
 
@@ -102,8 +102,19 @@ class Glorp(Transformer):
         self.stats.append(var_name)
         py_type = self._py_type(type_name)
         return f"{var_name}: {py_type} = {expression_str}"
+    
+    def var_change(self, items):
+        try: self.vartype[items[0]]
+        except: 
+            print(f'Variable not found {items[0]}')
+            sys.exit(1)
+        return f'{items[0]}: {self.vartype[items[0]]} = {items[1]}'
 
     def var_decl(self, items):
+        if items[1] in self.vartype.keys():
+            print(f'Variable {items[0]} is has been declared')
+            sys.exit(1)
+        self.vartype[items[1]] = self._py_type(items[0])
         if len(items) < 3:
             return f'{items[1]}: {self._py_type(items[0])} = None'
         type_name, var_name, expression_str = items
@@ -179,6 +190,12 @@ class Glorp(Transformer):
         return items[0]
     
     def array_elements(self, items): return items
+    def dictionary_elements(self, items): return items
+    def dictionary_element(self, items):
+        # items будет списком [key, value] из грамматики
+        key, value = items
+        # Возвращаем готовую строку "key: value"
+        return f"{key}: {value}"
 
     def logic_unary_not(self, items):
         return f"(not ({items[0]}))"
@@ -209,6 +226,15 @@ class Glorp(Transformer):
         elements = items[0]
         
         return f"[{', '.join(map(str, elements))}]"
+    
+    def dictionary(self, items):
+        if not items:
+            return "{}"
+        
+        elements = items[0]
+        
+        return "{" + ', '.join(map(str, elements)) + "}"
+
     def element(self, items): return f'{items[0]}[{items[1]}]'
     
     def clear(self, _): return 'print("\033[H\033[2J")'
@@ -233,14 +259,19 @@ class Glorp(Transformer):
     def NUMBER(self, num): return int(num.value)
     def STRING(self, s): return s
 
+if len(sys.argv) < 2:
+    print("Usage: glorp <source_file.glorp> (you may use some additional flags)")
+    sys.exit()
+
+if sys.argv[1] in ['--ver', '-v', '--version']:
+    print(VERSION)
+    sys.exit()
+
 try:
     source_code = open(sys.argv[1], encoding ='utf8').read()
     if source_code.strip() == '':
         print('Could not parse empty file!')
         sys.exit(1)
-except IndexError:
-    print("Usage: python your_compiler.py <source_file.glorp>")
-    sys.exit(1)
 except FileNotFoundError:
     print(f"Error: File or argument '{sys.argv[1]}' not found.")
     sys.exit(1)
