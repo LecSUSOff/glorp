@@ -1,0 +1,3 @@
+fn Null Main() {
+    out("Hello")
+}
