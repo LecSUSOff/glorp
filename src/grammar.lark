@@ -2,13 +2,13 @@ start: global_statement+
 
 global_statement: import_stmt | var_decl | func_short | func_long | private | watch_stmt
 
-local_statement: var_decl | return_stmnt | out_stmnt | clear | if_stmnt | while_stmnt | for_loop | watch_stmt | try_stmt
+local_statement: var_decl | return_stmnt | out_stmnt | clear | if_stmnt | while_stmnt | for_loop | watch_stmt | var_change
  
 import_stmt: "use" name
 
-var_decl: "let" TYPE name ("=" expression)?
+var_decl: "let" TYPE name "=" expression
+var_change: "set" name "=" expression
 private: "private" TYPE name "=" expression
-try_stmt: "try" "{" body "}" "catch" "{" body "}"
 func_short: "fn" TYPE name "(" parameters? ")" "=>" expression
 watch_stmt: "watch" TYPE NAME "=" expression "->" (local_statement | ("{" body "}"))
 return_stmnt: "=>" expression
@@ -42,6 +42,7 @@ factor: NUMBER
       | "(" expression ")"
       | call
       | array
+      | dictionary
       | element
 
 ?op_exp: OP_ADD | OP_SUB
@@ -64,12 +65,15 @@ OP_LE: "<="
 call: name "(" [arguments] ")"
 
 array: "[" [array_elements] "]"
+dictionary: "{" dictionary_elements "}"
 element: NAME "[" NUMBER "]"
 
 name: NAME("."NAME)*
 
 arguments: expression ("," expression)*
 array_elements: expression ("," expression)*
+dictionary_element: expression ":" expression
+dictionary_elements: dictionary_element ("," dictionary_element)*
 
 %import common.CNAME
 %import common.ESCAPED_STRING
