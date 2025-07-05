@@ -1,14 +1,12 @@
 <div align="center">
   <h1>Glorp Language Reference</h1>
-  <p><strong>The official language documentation for Glorp v1.0.4.</strong></p>
+  <p><strong>The official language documentation for Glorp v1.0.5.</strong></p>
 </div>
 <iframe src="https://discord.com/widget?id=1390350998236696686&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>
 
----
-
 ## Introduction
 
-Glorp is a statically-typed, pragmatic programming language. It is designed for clarity and developer productivity, featuring a C-like syntax, a powerful reactivity system, and the ability to transpile directly to Python. This version introduces floating-point numbers, file I/O, and robust user input handling.
+Glorp is a statically-typed, pragmatic programming language. It is designed for clarity and developer productivity, featuring a C-like syntax, a powerful reactivity system, and the ability to transpile directly to Python. This version introduces powerful list initialization and more intuitive loop constructs.
 
 This document serves as the official reference for the Glorp language syntax and features.
 
@@ -48,7 +46,6 @@ Variables are declared using `let`. They must be given a type.
 let Str message = "Hello!"
 let Int count = 100
 let Float gravity = 9.81
-let Bool is_active = false
 ```
 
 ### 2.2. Re-assignment (`set`)
@@ -59,7 +56,6 @@ To change the value of an existing variable, use `set`.
 ```glorp
 let Int score = 0
 set score = 100 // Correct
-// let Int score = 100 // Error: variable already declared.
 ```
 
 ---
@@ -98,7 +94,6 @@ watch Float price = 99.99 -> {
 }
 
 set price = 89.99 // Handler runs.
-set price = 89.99 // Handler does NOT run.
 ```
 ---
 
@@ -114,7 +109,13 @@ fn Str get_grade(Int score) {
 }
 ```
 
-### 5.2. `while` Loop
+### 5.2. Loops
+
+Glorp provides three types of loops for handling iterative tasks.
+
+#### 5.2.1. `while` Loop
+
+Executes a block of code as long as a condition is true.
 
 ```glorp
 let Int i = 3
@@ -124,13 +125,38 @@ while i > 0 {
 } // Prints "3... 2... 1... "
 ```
 
-### 5.3. `for` Loop
+#### 5.2.2. `for ... to` Loop (Range Iteration)
 
-Iterates over an inclusive range of integers.
+Iterates over an inclusive range of integers. As of v1.0.5, the `let` keyword is no longer required in the declaration.
 
-`for let Int <var> = <start> to <end> { <body> }`
+`for <Type> <var> = <start> to <end> { <body> }`
 ```glorp
-for let Int i = 1 to 3 { out("Lap ", i, "\n") }
+// The 'let' keyword is now omitted for cleaner syntax.
+for Int i = 1 to 3 { 
+    out("Lap ", i, "\n") 
+}
+```
+
+#### 5.2.3. `for each ... in` Loop (Collection Iteration)
+
+**New in 1.0.5:** This loop provides a simple way to iterate over each element in a `List`.
+
+`for each <var> in <collection> { <body> }`
+
+The type of the loop variable `<var>` is automatically inferred from the elements of the collection.
+
+```glorp
+// Create a list from 5 down to 1 using the new range syntax
+let List countdown = [5, ..., 1]
+
+// Iterate over the newly created list
+for each num in countdown {
+    out(num, "! ")
+}
+out("Go!\n")
+
+// --- Output ---
+// 5! 4! 3! 2! 1! Go!
 ```
 
 ---
@@ -147,10 +173,34 @@ let Float result = (10 + 2.5) * 2 // result is 25.0
 
 ### 7.1. Lists (Arrays)
 
-Ordered, zero-indexed collections.
+Ordered, zero-indexed collections of values.
+
+**Standard Initialization:**
 ```glorp
 let List data = [1, 3.14, "Glorp"]
 let Str item = data[2] // "Glorp"
+```
+
+**Range-based Initialization (New in 1.0.5):**
+
+Glorp offers a powerful shorthand to create lists containing a sequence of integers using the `...` operator.
+
+**Syntax:** `[<start>, ..., <end>]`
+
+This creates a new list with an inclusive range of integers. The operator automatically handles ascending and descending sequences.
+
+```glorp
+// Ascending sequence
+let List up = [1, ..., 5]
+// up is now [1, 2, 3, 4, 5]
+
+// Descending sequence
+let List down = [10, ..., 7]
+// down is now [10, 9, 8, 7]
+
+let Int limit = 3
+let List from_var = [limit, ..., limit - 2]
+// from_var is now [3, 2, 1]
 ```
 
 ### 7.2. Dictionaries
@@ -184,10 +234,7 @@ Any `.glorp` file can act as a module. You can import one file into another usin
 **`config.glorp`:**
 ```glorp
 let Str API_ENDPOINT = "https://api.example.com"
-
-fn Bool is_valid_port(Int port) {
-    => (port > 1024) and (port < 65535)
-}
+fn Bool is_valid_port(Int port) => (port > 1024) and (port < 65535)
 ```
 
 **`main.glorp`:**
@@ -208,77 +255,47 @@ The `private` keyword allows you to define variables that are strictly confined 
 
 **Syntax:** `private <Type> <name> = <expression>`
 
-(For a detailed explanation of Glorp's strict privacy model, see section 9.4)
-
 ### 9.3. A Peculiarity of Module Scopes: Self-Referencing
 
-Glorp's module system has a unique characteristic that developers must be aware of. When you define functions inside a module, they do not automatically have access to other members (variables or functions) of the same module. To access another member of the same module, you must explicitly use the module's own name as a namespace.
-
-This is best explained with an example. Let's consider a module named `math.glorp`.
+Glorp's module system has a unique characteristic. To access a member (variable or function) from within the same module, you must explicitly use the module's own name as a namespace.
 
 **`math.glorp`:**
 ```glorp
 let Int PI_APPROX = 3
 
-// --- INCORRECT ---
-// This function will fail because 'PI_APPROX' is not in its local scope.
-// fn Int get_pi_incorrect() => PI_APPROX 
-
-// --- CORRECT ---
-// To access PI_APPROX from within the same module, you must qualify
-// it with the module's name: 'math'.
+// Correct: To access PI_APPROX from within the same module, 
+// you must qualify it with the module's name 'math'.
 fn Int get_pi() {
     => math.PI_APPROX
 }
-
-fn Int add_one_to_pi() {
-    // This also requires using the 'math' namespace to call another
-    // function in the same module.
-    let Int pi_val = math.get_pi()
-    => pi_val + 1
-}
 ```
 
-**Why does it work this way?**
+**Why?** This is a result of how Glorp transpiles modules to Python classes. `let PI_APPROX = 3` becomes a class attribute, and `fn Int get_pi()` becomes a method. From inside a method, you need to reference the class (`math`) to access its attributes.
 
-This behavior is a direct result of how Glorp transpiles modules. When you write `use math`, the `math.glorp` file is processed and converted into a Python class named `math`.
-
-*   `let PI_APPROX = 3` becomes a class attribute `math.PI_APPROX`.
-*   `fn Int get_pi()...` becomes a method within the `math` class.
-
-From inside a method in Python, you cannot directly access a class attribute by its name alone; you need to reference it through the class (or an instance, e.g., `self`). Glorp simplifies this by requiring you to always use the static class name (`math`). This makes the code consistent and explicit about where a variable or function is coming from, even when working inside the module itself.
-
-> **Rule of Thumb:** When inside a file `my_module.glorp`, always use `my_module.member` to access another top-level member (variable or function) defined in that same file.
+> **Rule of Thumb:** When inside a file `my_module.glorp`, always use `my_module.member` to access another top-level member in that same file.
 
 ### 9.4. Understanding Glorp's Strict Privacy Model
 
-Glorp's privacy model for variables is stricter than in many other languages. Think of a `private` variable not as a "private field" of a class, but as a temporary, file-scoped constant. It exists only during the initial processing of the module and is erased afterwards.
-
-This means a `private` variable cannot be accessed by any functions, not even public functions within the same module, because the variable is deleted before the functions can be called.
+A `private` variable in Glorp is a temporary, file-scoped constant. It exists only during the initial processing of the module and is erased afterwards. This means a `private` variable cannot be accessed by any functions, not even public functions within the same module, because the variable is deleted before the functions can be called. Use `private` variables for one-time setup calculations.
 
 **`secret_key_manager.glorp`:**
 ```glorp
-// A private, internal master key. It's only used right here.
+// Private key used only for the initial calculation.
 private Str MASTER_KEY = "super-secret-master-string"
 
-// A public variable whose value is DERIVED from the private key.
-// This calculation happens once when the module is loaded.
+// Public token derived from the private key. This is permanent.
 let Str PUBLIC_API_TOKEN = MASTER_KEY + "-public-token"
 
-// This function would FAIL if uncommented, because by the time it is called,
-// MASTER_KEY no longer exists.
+// This function would FAIL if uncommented, because MASTER_KEY no longer exists.
 // fn Str get_master_key_again() => secret_key_manager.MASTER_KEY
 ```
-
-This design ensures that sensitive information is completely erased and cannot be leaked or accidentally modified after the module is initialized. Use `private` variables for one-time setup calculations whose results are stored in public variables.
-
 
 ---
 ## 10. Built-in Functions
 
 ### 10.1. Console Output
 
-*   **`out(...args)`**: Prints all arguments to the console, concatenated directly without spaces or a trailing newline. You must add them manually if needed.
+*   **`out(...args)`**: Prints all arguments to the console, concatenated directly without spaces or a trailing newline.
     ```glorp
     out("Hello, ", "World!", "\n") // Prints "Hello, World!" and a newline.
     ```
@@ -286,38 +303,24 @@ This design ensures that sensitive information is completely erased and cannot b
 
 ### 10.2. Console Input
 
-These functions safely read user input, repeatedly prompting on invalid entry. They all accept an optional `Str` prompt.
+These functions safely read user input, repeatedly prompting on invalid entry.
 
 *   **`read_str(prompt)`**: Reads a line of text. Returns `Str`.
 *   **`read_int(prompt)`**: Reads and validates an integer. Returns `Int`.
 *   **`read_float(prompt)`**: Reads and validates a float. Returns `Float`.
-*   **`read_bool(prompt)`**: Reads and validates a boolean (`true`/`false`, `y`/`n`, etc.). Returns `Bool`.
-
-**Example:**
-```glorp
-let Int age = read_int("Enter your age: ")
-out("You are ", age, " years old.\n")
-```
+*   **`read_bool(prompt)`**: Reads and validates a boolean (`true`/`false`, `y`/`n`). Returns `Bool`.
 
 ### 10.3. File I/O
 
 *   **`writefile(Str path, Str content)`**: Writes (or overwrites) a string to a file.
 *   **`readfile(Str path)`**: Reads an entire file's content into a string. Returns `Str`.
 
-**Example:**
-```glorp
-let Str filename = "my_data.txt"
-writefile(filename, "This is a test from Glorp.")
-let Str content = readfile(filename)
-out(content)
-```
-
-### 10.4. Exeption handeling
-* **`exeption(Str e)`**: Exits the programm with exit code `1` after outputing `Glorp runtime exeption: {e}`
+### 10.4. Exception Handling
+* **`exception(Str e)`**: Exits the program with exit code `1` after outputting `Glorp runtime exception: {e}`.
 ```glorp
 fn Float Sqrt(Int a) {
   if a < 0 {
-    exeption("Tring to take negative sqare root")
+    exception("Trying to take negative square root")
   }
   => a ^ 0.5
 }
