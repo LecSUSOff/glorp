@@ -311,3 +311,14 @@ writefile(filename, "This is a test from Glorp.")
 let Str content = readfile(filename)
 out(content)
 ```
+
+### 10.4. Exeption handeling
+* **`exeption(Str e)`**: Exits the programm with exit code `1` after outputing `Glorp runtime exeption: {e}`
+```glorp
+fn Float Sqrt(Int a) {
+  if a < 0 {
+    exeption("Tring to take negative sqare root")
+  }
+  => a ^ 0.5
+}
+```
