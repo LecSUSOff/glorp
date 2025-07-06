@@ -439,35 +439,11 @@ fn Null Main() ->
     out("--- Age Calculator ---\n")
     let Str name = read_str("What is your name? ")
     let Int birth_year = read_int("What year were you born? ")
-    let Int current_year = 2024 // Or fetch dynamically
+    let Int current_year = 2025 // Or fetch dynamically
 
     let Int age = current_year - birth_year
 
     out("\nHello, ", name, "! You are approximately ", age, " years old.\n")
-```
-
-### Case 2: Lazy Data Processing Pipeline
-
-This example reads a large log file, finds all lines containing "ERROR", extracts a message, and prints the first 5 found, all without loading the whole file into memory.
-
-```glorp
-// log_analyzer.glorp
-
-fn Null Main() ->
-    let Str file_content = readfile("large_log_file.log")
-    let List lines = str.split(file_content, "\n")
-
-    // Create a lazy iterator of error messages
-    let List error_msgs = each Str line in lines
-                          where str.contains(line, "ERROR")
-                          -> str.replace(line, "ERROR: ", "")
-
-    // Take only the first 5 errors found
-    let List first_five_errors = take 5 from error_msgs
-
-    out("First 5 errors found:\n")
-    each Str msg in first_five_errors ->
-        out("- ", msg, "\n")
 ```
 
 ---
