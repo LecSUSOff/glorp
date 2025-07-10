@@ -83,20 +83,20 @@ This is where Glorp truly shines. The `watch` keyword lets you execute code when
 
 **Create `counter.glorp`:**
 ```glorp
-fn Null Main() {
+fn Main() {
     // This block will run automatically every time 'counter' is updated
-    watch Int counter = 0 -> {
-        out("Counter changed to: ", counter)
+    watch counter = 0 {
+        out("Counter changed to: ", counter, "\n")
     }
 
-    out("Starting...")
+    out("Starting...\n")
 
     // The 'watch' block triggers on each of these lines
-    let Int counter = 1
-    let Int counter = 2
-    let Int counter = 3
+    var counter.value = 1
+    var counter.value = 2
+    var counter.value = 3
 
-    out("Finished!")
+    out("Finished!\n")
 }
 ```
 
@@ -114,14 +114,6 @@ Counter changed to: 3
 Finished!
 ```
 *Notice how the reactive block was triggered automatically on each assignment. No callbacks, no boilerplate.*
-
-## 🗺️ Roadmap
-
-Glorp is actively developed. Here's what's next:
-
--   [ ] Better and more helpful error messages.
--   [ ] A core standard library (string utils, file I/O).
--   [ ] Syntax highlighting for VS Code.
 
 ## ❤️ Contributing
 
