@@ -1,39 +1,61 @@
 # Welcome to Glorp: The Official Documentation
 
-Glorp is a modern, statically-typed programming language that transpiles to Python. It is designed to be expressive, readable, and powerful, combining the safety of static types with a clean, concise syntax.
+Glorp is a modern, dynamically-typed programming language that transpiles to Python. It is designed to be expressive, readable, and powerful, offering a clean, concise syntax that simplifies everything from simple scripts to complex applications.
 
-This documentation will guide you through all the features of the Glorp language, from the basics to advanced topics like lazy evaluation and reactive programming.
+This documentation will guide you through all the features of the Glorp language. We'll start with a practical example to see it in action, then dive into the details.
 
+---
 
-## 1. Getting Started
+## 1. Glorp by Example: A Guessing Game
 
-### Your First Glorp Program
+Instead of just talking about syntax, let's see what Glorp code looks like by building a small, complete program. Here is a number guessing game.
 
-Let's start with the classic "Hello, World!". Create a file named `hello.glorp`.
+Create a file named `game.glorp` and add the following code:
 
 ```glorp
-// hello.glorp
+fn Main() {
+    out("--- Guess the Number Game ---\n")
+    out("I'm thinking of a number between 1 and 100.\n\n")
 
-// Every Glorp program needs a Main function as its entry point.
-fn Null Main() ->
-    out("Hello, Glorp World!\n")
+    var secret_number = 73
+    var is_running = true
+
+    while is_running {
+        var guess = read_int("Your guess: ")
+
+        if guess < secret_number {
+            out("Too low! Try again.\n")
+        } elif guess > secret_number {
+            out("Too high! Try again.\n")
+        } else {
+            out("\nYou got it! The number was ", secret_number, ".\n")
+            var is_running = false // End the loop
+        }
+    }
+
+    out("Thanks for playing!\n")
+}
 ```
 
-To run this, you would use the Glorp interpreter:
+To run your game, use the Glorp interpreter from your terminal:
 
 ```bash
-glorp hello.glorp
+glorp game.glorp
 ```
 
-### The Entry Point: `Main()`
+### Breaking Down the Example
 
-**Every executable Glorp program must have a function named `Main`**. This is where the execution of your program begins. It can take no arguments and typically returns `Null`, but can return other types if needed.
+Let's look at the features this small program uses:
 
-```glorp
-fn Int Main() ->
-    out("Program starting...\n")
-    => 0 // Return an exit code
-```
+1.  **`fn Main() { ... }`**: This is the **entry point**. All executable Glorp programs must have a `Main` function where the program begins.
+2.  **`out(...)`**: A built-in function that prints text to the console.
+3.  **`var secret_number = 73`**: This is **variable declaration**. We use the `var` keyword to create a new variable. Glorp is dynamically typed, so you don't need to specify the type.
+4.  **`while is_running { ... }`**: A **`while` loop** that continues to execute the code inside its `{}` block as long as the condition (`is_running`) is `true`.
+5.  **`read_int(...)`**: A built-in function that pauses the program, prompts the user for input, and ensures the value they enter is a valid integer.
+6.  **`if/elif/else`**: The **conditional block** that checks the user's guess and provides feedback.
+7.  **`var is_running = false`**: This is **variable reassignment**. We change the value of an existing variable to control the flow of our loop.
+
+This single example showcases a huge part of the language! Now, let's explore these concepts in more detail.
 
 ---
 
@@ -41,7 +63,7 @@ fn Int Main() ->
 
 ### Comments
 
-Glorp supports two types of comments, just like C++, Java, or JavaScript.
+Use comments to leave notes in your code that are ignored by the interpreter.
 
 ```glorp
 // This is a single-line comment.
@@ -52,69 +74,61 @@ Glorp supports two types of comments, just like C++, Java, or JavaScript.
 */
 ```
 
-### Data Types
+### Dynamic Typing
 
-Glorp is statically typed. You must declare the type of every variable and function return value.
+You do not need to specify the type of a variable. The type is inferred from the value you assign.
 
-| Glorp Type | Python Equivalent | Description                               |
-| :--------- | :---------------- | :---------------------------------------- |
-| `Int`      | `int`             | Whole numbers (e.g., `10`, `-5`).         |
-| `Float`    | `float`           | Floating-point numbers (e.g., `3.14`).    |
-| `Str`      | `str`             | Text strings (e.g., `"hello"`).           |
-| `Bool`     | `bool`            | `true` or `false`.                        |
-| `List`     | `list` / `iterator` | An ordered collection of items.         |
-| `Dict`     | `dict`            | A collection of key-value pairs.          |
-| `Null`     | `None`            | Represents the absence of a value.        |
+```glorp
+var score = 100             // Inferred as an Integer
+var player_name = "Alex"    // Inferred as a String
+var is_active = true        // Inferred as a Boolean
+```
 
 ---
 
 ## 3. Variables and Scope
 
-### Variable Declaration (`let`)
+### Variable Declaration and Assignment (`var`)
 
-You declare a new variable using the `let` keyword. A value must be assigned at declaration.
-
-```glorp
-let Int score = 100
-let Str player_name = "Alex"
-let Bool is_active = true
-```
-
-### Variable Reassignment (`set`)
-
-To change the value of an *existing* variable, use the `set` keyword. This helps prevent accidental re-declarations.
+Declare a new variable and assign its initial value using the `var` keyword. To change the value later, simply use `var` again with the same variable name.
 
 ```glorp
-let Int health = 100
-set health = health - 10 // health is now 90
+fn Main() {
+    // Declaration
+    var health = 100
+    out("Initial health: ", health, "\n")
 
-// This would cause an error, as 'health' is already declared.
-// let Int health = 50
+    // Reassignment
+    var health = health - 10
+    out("Health after taking damage: ", health, "\n")
+}
 ```
 
-### Private Variables
+### Private Variables (`private`)
 
-When creating modules, you can declare variables with `private`. These variables will not be accessible from outside the module file.
+When creating modules, `private` provides **true encapsulation**. Private variables are inaccessible from outside the module file, protecting your internal implementation. Glorp achieves this through **name mangling**, renaming the variable to a unique, randomized name.
 
 ```glorp
 // in my_module.glorp
-private Str api_key = "SECRET_KEY" // This cannot be accessed via my_module.api_key
-let Str public_data = "some data"
+private api_key = "SECRET_KEY" // Cannot be accessed via my_module.api_key
+var public_data = "some data"
 ```
 
 ### Watched Variables (`watch`)
 
-This powerful feature allows you to execute a block of code whenever a variable's value changes. This is a core concept for reactive programming in Glorp.
+This powerful feature executes a block of code whenever a variable's value changes, enabling a reactive programming style. To access or change the watched value, you must use the `.value` property.
 
 ```glorp
-// The handler code will run every time 'level.value' is changed.
-watch Int level = 1 ->
-    out("Level up! You are now level ", level, "!\n")
+fn Main() {
+    // This handler runs every time 'level.value' changes.
+    watch level = 1 {
+        out("Level up! You are now level ", level.value, "!\n")
+    }
 
-// To access or change the value, use '.value'
-out("Current level: ", level.value, "\n") // Prints 1
-
-set level.value = 2 // Triggers the handler, printing "Level up!..."
+    out("Game start. Current level: ", level.value, "\n")
+    var level.value = 2 // Triggers the handler
+    var level.value = 3 // Triggers the handler again
+}
 ```
 
 ---
@@ -123,46 +137,36 @@ set level.value = 2 // Triggers the handler, printing "Level up!..."
 
 ### Arithmetic Operators
 
-| Operator | Description        | Example         |
-| :------- | :----------------- | :-------------- |
-| `+`      | Addition           | `5 + 3`         |
-| `-`      | Subtraction        | `5 - 3`         |
-| `*`      | Multiplication     | `5 * 3`         |
-| `/`      | Division           | `5 / 3`         |
-| `%`      | Modulo (remainder) | `5 % 3`         |
-| `%%`     | Integer Division   | `5 %% 3`        |
-| `^`      | Power              | `5 ^ 3`         |
-
-### Comparison Operators
-
-| Operator | Description              | Example       |
-| :------- | :----------------------- | :------------ |
-| `==`     | Equal to                 | `x == y`      |
-| `!=`     | Not equal to             | `x != y`      |
-| `>`      | Greater than             | `x > y`       |
-| `<`      | Less than                | `x < y`       |
-| `>=`     | Greater than or equal to | `x >= y`      |
-| `<=`     | Less than or equal to    | `x <= y`      |
-
-### Logical Operators
-
-| Operator | Description                               | Example           |
+| Operator | Description | Example |
 |:---|:---|:---|
-| `and`    | Logical AND (true if both are true)       | `a > 0 and b > 0` |
-| `or`     | Logical OR (true if either is true)       | `a > 0 or b > 0`  |
-| `not`    | Logical NOT (inverts boolean value)       | `not is_active`   |
+| `+` | Addition | `5 + 3` |
+| `-` | Subtraction | `5 - 3` |
+| `*` | Multiplication | `5 * 3` |
+| `/` | Division | `5 / 3` |
+| `%` | Modulo (remainder) | `5 % 3` |
+| `%%` | Integer Division | `5 %% 3` |
+| `^` | Power | `5 ^ 3` |
+
+### Comparison and Logical Operators
+
+| Operator | Description |
+|:---|:---|
+| `==`, `!=`, `>`, `<`, `>=`, `<=` | Standard comparison operators. |
+| `and` | Logical AND (true if both are true). |
+| `or` | Logical OR (true if either is true). |
+| `not` | Logical NOT (inverts a boolean value). |
 
 ---
 
 ## 5. Data Structures
 
-### Lists
+### Lists (Arrays)
 
-Lists are ordered collections.
+Lists are ordered, mutable collections of items.
 
 ```glorp
-let List numbers = [1, 2, 3, 5, 8]
-let List mixed = [1, "two", true]
+var numbers = [1, 2, 3, 5, 8]
+var mixed = [1, "two", true, [10, 20]]
 ```
 
 ### Dictionaries
@@ -170,7 +174,7 @@ let List mixed = [1, "two", true]
 Dictionaries store key-value pairs.
 
 ```glorp
-let Dict user = {
+var user = {
     "name": "Gandalf",
     "class": "Wizard",
     "level": 20
@@ -179,14 +183,14 @@ let Dict user = {
 
 ### Lazy Ranges
 
-Glorp provides a concise syntax for creating **lazy iterators** over a range of numbers. They do not consume memory for all numbers at once.
+A concise syntax for creating memory-efficient **lazy iterators** over a range of numbers.
 
 ```glorp
-// Creates a lazy iterator from 1 to 10 (inclusive)
-let List my_range = [1...10]
+// An iterator from 1 to 10 (inclusive)
+var my_range = [1, ..., 10]
 
-// Creates a lazy iterator from 0 to 100 with a step of 5
-let List by_fives = [0, 5...100]
+// An iterator from 0 to 100 with a step of 5
+var by_fives = [0, 5, ..., 100]
 ```
 
 ### Element Access
@@ -194,96 +198,70 @@ let List by_fives = [0, 5...100]
 Access elements in lists and dictionaries using square brackets `[]`.
 
 ```glorp
-let List items = ["sword", "shield", "potion"]
-let Str first_item = items[0] // "sword"
+fn Main() {
+    var items = ["sword", "shield", "potion"]
+    var first_item = items[0] // "sword"
+    out(first_item, "\n")
 
-let Dict user = {"name": "Aragorn"}
-let Str user_name = user["name"] // "Aragorn"
+    var user = {"name": "Aragorn"}
+    var user_name = user["name"] // "Aragorn"
+    out(user_name, "\n")
+}
 ```
 
 ---
 
 ## 6. Control Flow
 
-Glorp uses `->` for single-line bodies and `{}` for multi-line bodies to keep syntax clean.
+Glorp uses `{}` for multi-line bodies. For single-statement bodies, you can use `->` as a concise alternative.
 
 ### `if` / `elif` / `else`
 
-Standard conditional logic. `when` is an alias for a single `if`.
+`when` is a convenient alias for a single `if` statement.
 
 ```glorp
-let Int score = 85
-
-if score > 90 -> out("Grade: A\n")
-elif score > 80 {
-    out("Grade: B\n")
-    out("Good job!\n")
+fn Main() {
+    var score = 85
+    if score > 90 -> out("Grade: A\n")
+    elif score > 80 {
+        out("Grade: B\n")
+        out("Good job!\n")
+    }
+    else -> out("Keep trying!\n")
 }
-else -> out("Keep trying!\n")
 ```
 
 ### `switch`
 
-A powerful alternative to `if-elif` chains, similar to pattern matching.
+A powerful alternative to `if-elif` chains, perfect for handling multiple distinct cases.
 
 ```glorp
-let Str command = "go_north"
-
-switch command ->
-    "go_north" => out("You move north.")
-    "go_south" => out("You move south.")
-    "get_item" => out("You pick up the shiny object.")
-    else       => out("Unknown command.")
-```
-
-### `while` Loops
-
-Executes a block of code as long as a condition is true.
-
-```glorp
-let Int i = 0
-while i < 5 ->
-    out(i, "\n")
-    set i = i + 1
-```
-
-### `for` Loops
-
-Iterates over a numerical range.
-
-```glorp
-// Iterates from 1 up to 10
-for i from 1 to 10 ->
-    out(i, "\n")
-
-// Iterates from 10 down to 1
-for i from 10 to 1 ->
-    out(i, "\n")
-```
-
-### `each` Loops
-
-The idiomatic way to iterate over any collection or iterator.
-
-**1. Block Form:**
-```glorp
-let List names = ["Frodo", "Sam", "Merry"]
-each Str name in names -> {
-    out("Welcome, ", name, "!\n")
+fn Main() {
+    var command = "go_north"
+    switch command {
+        "go_north" -> out("You move north.")
+        "go_south" -> out("You move south.")
+        else       -> out("Unknown command.")
+    }
 }
 ```
 
-**2. Quick Form (Lazy Comprehension):**
-This form creates a new lazy iterator by transforming another.
+### `for` and `each` Loops
+
+`for` loops are for numerical ranges. `each` is the idiomatic way to iterate over any collection.
 
 ```glorp
-let List numbers = [1...10]
+fn Main() {
+    // For loop
+    for i from 1 to 3 -> out(i, " ") //> 1 2 3
+    out("\n")
 
-// Create a new lazy iterator of squared numbers
-let List squares = each Int n in numbers -> n ^ 2
-
-// Filter and transform at the same time
-let List even_squares = each Int n in numbers where n % 2 == 0 -> n ^ 2
+    // Each loop
+    var names = ["Frodo", "Sam", "Merry"]
+    each name in names {
+        out("Welcome, ", name, "!\n")
+    }
+}
 ```
 
 ---
@@ -292,120 +270,101 @@ let List even_squares = each Int n in numbers where n % 2 == 0 -> n ^ 2
 
 ### Declaration
 
-Functions are first-class citizens. They require type hints for parameters and the return value.
+Functions are first-class citizens. They can be defined in a short form for single expressions or a long form for block bodies.
 
-**1. Short Form (Lambda-style):**
-For single-expression functions.
 ```glorp
-fn Int add(Int a, Int b) => a + b
+// Short form for a single expression
+fn add(a, b) => a + b
+
+// Long form for multiple statements
+fn greet(name) {
+    var message = "Hello, " + name + "!"
+    out(message)
+}
+
+fn Main() {
+    var sum = add(5, 3)
+    out("Sum is: ", sum, "\n")
+    greet("World")
+}
 ```
 
-**2. Long Form (Block Body):**
-For functions with multiple statements.
+### Named and Default Arguments
+
+Functions support **named arguments** for clarity and **default values** with `else` for flexibility.
+
 ```glorp
-fn Null greet(Str name) -> {
-    let Str message = "Hello, " + name + "!"
-    out(message)
-    return // Explicit return for Null functions
+fn setup(host, port else 8080, user else "guest") {
+    out("Connecting to ", host, ":", port, " as ", user, "\n")
+}
+
+fn Main() {
+    setup("glorp-lang.dev")                   // Uses both defaults
+    setup("localhost", port: 9000)            // Overrides one default
+    setup(user: "admin", host: "internal.net") // Use named args in any order
 }
 ```
 
 ### Generators and `yield`
 
-A function becomes a **generator** if it uses the `->` statement (syntactic sugar for `yield`). Generators produce a sequence of values lazily.
+A function becomes a **generator** if it uses `->` inside its body to `yield` a value. Generators produce a sequence of values lazily.
 
 ```glorp
 // This function generates the Fibonacci sequence infinitely.
-fn List fibonacci() ->
-    let Int a = 0
-    let Int b = 1
-    while true ->
+fn fibonacci() {
+    var a = 0
+    var b = 1
+    while true {
         -> a // Yield the current value
-        let Int temp = a
-        set a = b
-        set b = temp + b
+        var temp = a
+        var a = b
+        var b = temp + b
+    }
+}
 ```
 
 ---
 
-## 8. Advanced Features
-
-### Lazy Evaluation
-
-Many of Glorp's features, like ranges `[...]`, quick `each` loops, and generators, are **lazy**. This means they don't compute their values until they are actually needed. This is incredibly efficient for memory and allows you to work with very large or even infinite data sets.
+## 8. Modules and Error Handling
 
 ### Modules (`use`)
 
-Split your code into multiple files and use them as modules.
+Split your code into multiple files. Glorp supports **hierarchical imports**. When you import `utils.http`, the module is available under the final name, `http`.
 
+*File `main.glorp`:*
 ```glorp
-// file: math_utils.glorp
-fn Int double(Int x) => x * 2
-private Int secret = 42 // Not exported
+use utils.math // Imports utils/math.glorp
 
-// file: main.glorp
-use "math_utils"
-
-fn Null Main() ->
-    let Int result = math_utils.double(10) // 20
+fn Main() {
+    // Use 'math', not 'utils.math'
+    var result = math.add(10, 5)
     out(result)
-    // math_utils.secret would be an error
-```
-
-### Infinity (`Inf`)
-
-Glorp has built-in support for infinity.
-
-```glorp
-// A loop that runs until manually broken
-for i from 0 to Inf ->
-    if i > 1000 -> break
-    out(i, "\n")
-```
-
-### Taking from Iterators (`take`)
-
-Safely get a specific number of items from any iterator, including infinite ones.
-
-```glorp
-// From the fibonacci() generator example above
-let List first_10_fib = take 10 from fibonacci()
-
-each Int n in first_10_fib ->
-    out(n, " ") // 0 1 1 2 3 5 8 13 21 34
-```
-
----
-
-## 9. Error Handling
-
-### `try` / `catch`
-
-Handle potential runtime errors gracefully. The error is captured in the `exception` variable.
-
-```glorp
-try {
-    let Int num = read_int("Enter a number: ")
-    out("You entered: ", num, "\n")
-}
-catch {
-    out("That wasn't a valid integer! Details: ", exception, "\n")
 }
 ```
 
-### `throw`
+### Error Handling (`try` / `catch` and `throw`)
 
-Raise your own custom errors.
+Handle potential errors with `try/catch`. The error is captured in the special `exception` variable. Raise your own errors with `throw`.
 
 ```glorp
-fn Null check_age(Int age) ->
+fn check_age(age) {
     if age < 18 -> throw "User is too young!"
     out("Access granted.")
+}
+
+fn Main() {
+    try {
+        check_age(15)
+    }
+    catch {
+        out("An error occurred! Details: ", exception, "\n")
+    }
+}
 ```
 
 ---
 
-## 10. Built-in Functions
+## 9. Built-in Functions
 
 Glorp provides a small but useful standard library of global functions.
 
@@ -415,159 +374,9 @@ Glorp provides a small but useful standard library of global functions.
 | `clear()` | Clears the console screen. |
 | `readfile(filename)` | Reads an entire file into a string. |
 | `writefile(filename, content)`| Writes a string to a file. |
-| `read(prompt)` | Reads a line of text from the user. |
-| `read_str(prompt)` | Alias for `read`. |
-| `read_int(prompt)` | Reads input and ensures it's a valid integer. |
-| `read_float(prompt)` | Reads input and ensures it's a valid float. |
-| `read_bool(prompt)` | Reads input and ensures it's a valid boolean (`true`/`false`). |
+| `read(prompt?)` | Reads a line of text from the user. |
+| `read_int(prompt?)` | Reads input and ensures it's a valid integer. |
+| `read_float(prompt?)` | Reads input and ensures it's a valid float. |
+| `read_bool(prompt?)` | Reads input and ensures it's a valid boolean. |
 | `str(val)`, `int(val)`, etc. | Type conversion functions. |
-| `take(n, iterable)` | Returns a lazy iterator with the first `n` items. |
-| `grange(start, end, step?)` | The underlying function for lazy ranges. |
-
----
-
-## 11. Use Cases & Examples
-
-### Case 1: Interactive CLI Tool
-
-This program asks for a user's name and year of birth, then calculates their approximate age.
-
-```glorp
-// age_calculator.glorp
-
-fn Null Main() ->
-    out("--- Age Calculator ---\n")
-    let Str name = read_str("What is your name? ")
-    let Int birth_year = read_int("What year were you born? ")
-    let Int current_year = 2025 // Or fetch dynamically
-
-    let Int age = current_year - birth_year
-
-    out("\nHello, ", name, "! You are approximately ", age, " years old.\n")
-```
-
----
-
-## 12. Formal Syntax (Grammar)
-
-For language tool developers and those interested in Glorp's inner workings, here is the formal grammar in Lark syntax.
-
-```lark
-start: global_statement+
-
-global_statement: import_stmt | var_decl | func_short | func_long | private | watch_stmt
-
-local_statement:    var_decl
-                  | return_stmnt
-                  | if_stmnt
-                  | while_stmnt
-                  | for_loop
-                  | for_each
-                  | watch_stmt
-                  | var_change
-                  | call
-                  | try_stmt
-                  | throw
-                  | yield_stmt
-                  | switch_case
-
-import_stmt: "use" name
-
-var_decl: "let" TYPE name "=" expression
-var_change: "set" name "=" expression
-private: "private" TYPE name "=" expression
-func_short: "fn" TYPE name "(" parameters? ")" "=>" expression
-watch_stmt: "watch" TYPE name "=" expression "->" (local_statement | body)
-return_stmnt: "=>" expression
-switch_case: "switch" expression "->" (expression "=>" local_statement | body)* ("else" "->" local_statement | body)
-take_stmt: "take" expression "from" expression
-
-func_long: "fn" TYPE name "(" parameters? ")" body
-
-if_stmnt:     "if" expression body ("elif" expression body )* ("else" body)?
-            | "when" expression body
-while_stmnt: "while" expression body
-for_loop: "for" name "from" expression ("up" | "down")? "to" expression body
-for_each: "each" name "in" expression body
-quick_foreach: "each" name "in" expression ("where" expression)? "->" expression ("else" expression)?
-try_stmt: "try" body "catch" body
-throw: "throw" expression
-yield_stmt: "->" expression
-
-body: ("{" local_statement* "}") | ("->" local_statement)
-
-TYPE: NAME
-
-parameters: TYPE name ("," TYPE name)*
-expression: quick_foreach | logic_or
-
-logic_or: logic_and ("or" logic_and)*
-logic_and: logic_not ("and" logic_not)*
-logic_not: "not" logic_not -> logic_unary_not
-         | comparison
-comparison: arith_exp (op_bool arith_exp)?
-
-arith_exp: term (op_exp term)*
-term: factor (op_term factor)*
-factor: NUMBER
-      | "-" INF     -> neg_inf
-      | ("+")? INF     -> pos_inf
-      | STRING
-      | name
-      | "(" expression ")"
-      | call
-      | array
-      | dictionary
-      | element
-      | num_range
-      | take_stmt
-
-?op_exp: OP_ADD | OP_SUB
-OP_ADD: "+"
-OP_SUB: "-"
-
-?op_term: OP_MUL | OP_DIV | OP_POW
-OP_MUL: "*"
-OP_DIV: "/" | "%" | "%%"
-OP_POW: "^"
-
-?op_bool: OP_EQ | OP_NE | OP_GT | OP_LT | OP_GE | OP_LE
-OP_EQ: "=="
-OP_NE: "!="
-OP_GT: ">"
-OP_LT: "<"
-OP_GE: ">="
-OP_LE: "<="
-
-INF: "Inf" | "Infinity"
-
-call: name "(" [arguments] ")"
-
-array: "[" [array_elements] "]"
-num_range: "[" expression "," (expression ",")? "..." "," expression "]"
-dictionary: "{" dictionary_elements "}"
-element: NAME "[" expression "]"
-
-name: NAME("."NAME)*
-
-arguments: expression ("," expression)*
-array_elements: expression ("," expression)*
-dictionary_element: expression ":" expression
-dictionary_elements: dictionary_element ("," dictionary_element)*
-
-%import common.CNAME
-%import common.ESCAPED_STRING
-
-%import common.CNAME -> NAME
-%import common.SIGNED_NUMBER -> NUMBER
-%import common.ESCAPED_STRING -> STRING
-%import common.WS
-
-SINGLE_LINE_COMMENT: /\/\/[^\n]*/
-MULTI_LINE_COMMENT_STD: /\/\*[\s\S]*?\*\//
-
-%ignore SINGLE_LINE_COMMENT
-%ignore MULTI_LINE_COMMENT_STD
-%import common.WS
-%ignore WS
-```
+| `take(n, iterable)` | Returns the first `n` items from an iterable. |
