@@ -27,7 +27,7 @@ Also, read the [**Documentation**](https://glorp.readthedocs.io/en/latest/)
 ### Core Features
 
 -   ✅ **Simple & Clean Syntax:** Write readable code, free from clutter.
--   🔒 **Static Typing:** Catch errors before you run, not after.
+-   🔒 **Dynamic Typing:** Write how you want.
 -   ✨ **Built-in Reactivity:** Use `watch` to create code that magically responds to data changes.
 
 ---
