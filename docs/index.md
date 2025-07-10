@@ -122,7 +122,7 @@ This powerful feature executes a block of code whenever a variable's value chang
 fn Main() {
     // This handler runs every time 'level.value' changes.
     watch level = 1 {
-        out("Level up! You are now level ", level.value, "!\n")
+        out("Level up! You are now level ", level, "!\n") //Note: you use level, not level.value there
     }
 
     out("Game start. Current level: ", level.value, "\n")
@@ -228,6 +228,7 @@ fn Main() {
         out("Good job!\n")
     }
     else -> out("Keep trying!\n")
+    when score == 10 -> out("Your score is ten")
 }
 ```
 
@@ -299,8 +300,8 @@ fn setup(host, port else 8080, user else "guest") {
 }
 
 fn Main() {
-    setup("glorp-lang.dev")                   // Uses both defaults
-    setup("localhost", port: 9000)            // Overrides one default
+    setup("glorp-lang.dev")                    // Uses both defaults
+    setup("localhost", port: 9000)             // Overrides one default
     setup(user: "admin", host: "internal.net") // Use named args in any order
 }
 ```
@@ -321,6 +322,12 @@ fn fibonacci() {
         var b = temp + b
     }
 }
+```
+
+You can also **take** any amount of elements from generator
+
+```glorp
+fn Main() -> out(take 20 from [1, 3, ..., Inf]) //[1.0, 3.0, 5.0, 7.0, 9.0, 11.0, 13.0, 15.0, 17.0, 19.0, 21.0, 23.0, 25.0, 27.0, 29.0, 31.0, 33.0, 35.0, 37.0, 39.0]
 ```
 
 ---
@@ -379,4 +386,3 @@ Glorp provides a small but useful standard library of global functions.
 | `read_float(prompt?)` | Reads input and ensures it's a valid float. |
 | `read_bool(prompt?)` | Reads input and ensures it's a valid boolean. |
 | `str(val)`, `int(val)`, etc. | Type conversion functions. |
-| `take(n, iterable)` | Returns the first `n` items from an iterable. |
