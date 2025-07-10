@@ -11,7 +11,7 @@ repo_name: 'glorp'
 # --- Тема оформления и ее настройки ---
 theme:
   name: material
-  logo: '🦉' # Можно использовать emoji или путь к файлу, например: 'assets/logo.png'
+  logo: 'assets/logo.png'
   palette:
     # Светлая тема
     - scheme: default
