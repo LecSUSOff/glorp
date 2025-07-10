@@ -4,16 +4,6 @@
 
 **A simple, statically-typed language with built-in reactivity.**
 
-<p>
-  <a href="https://opensource.org/licenses/MIT">
-    <img src="https://img.shi<img width="1024" height="1024" alt="Copilot_20250710_171719" src="https://github.com/user-attachments/assets/638fd828-7c5e-4934-ad86-4b30f0790d3e" />
-elds.io/badge/License-MIT-yellow.svg" alt="License: MIT">
-  </a>
-  <a href="CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs Welcome">
-  </a>
-</p>
-
 </div>
 
 Glorp combines the safety of static types with a clean, modern syntax. Its killer feature is the `watch` keyword, allowing you to build reactive, event-driven applications with zero boilerplate.
