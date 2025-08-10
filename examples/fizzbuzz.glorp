@@ -1,0 +1,14 @@
+//Not working until divisiun fix
+
+fn null Main() {
+    for n from 1 up to 20 {
+        out(n, ": ")
+        if n % 3 {
+            out("Fizz")
+        }
+        if n % 5 {
+            out("Buzz")
+        }
+        out("\n")
+    }
+}
