@@ -1,12 +1,12 @@
-//Not working until divisiun fix
+//Not working until division fix
 
 fn null Main() {
     for n from 1 up to 20 {
         out(n, ": ")
-        if n % 3 {
+        if n % 3 == 0 {
             out("Fizz")
         }
-        if n % 5 {
+        if n % 5 == 0 {
             out("Buzz")
         }
         out("\n")

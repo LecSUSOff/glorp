@@ -16,6 +16,7 @@ start = time.time()
 VERSION = "1.1.0"
 
 py_prefix = r"""
+from math import floor
 from itertools import islice
 import linecache
 from types import SimpleNamespace
@@ -188,6 +189,12 @@ def safe_div(a, b):
     except ZeroDivisionError:
         return float("inf")
 
+def int_div(a, b):
+    try:
+        return a % b
+    except ZeroDivisionError:
+        return float("inf")
+
 true = True
 false = False
 Null = NullType()
@@ -196,12 +203,6 @@ num = eval
 
 __glorp_last__ = Null
 __vals__ = []
-
-def update_last(val):
-    global __glorp_last__
-    __glorp_last__ = val
-    __vals__.append(val)
-    return val
 """
 
 def get_grammar_path():
@@ -355,7 +356,6 @@ class Glorp(Transformer):
 
         return fn_code
 
-
     def import_stmt(self, items):
         path = items[-1].split('.')
         module_path = "/".join(path)
@@ -424,6 +424,9 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def list_comprehension(self, items):
         generator_expression = items[0]
         return f'list({generator_expression})'
+    
+    def int_div(self, items):
+        return f'int_div({items[0]}, {items[1]})'
 
     def watch_stmt(self, items):
         var_name, initial_value, handler_code = items
@@ -588,7 +591,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def safe_div(self, items): return f"safe_div({items[0]}, {items[1]})"
     def globalise(self, items): return f'global {items[0]}'
     def symbol(self, items): return items[0]
-    def expression(self, items: list[str]):  return f'update_last({items[0]})'
+    def expression(self, items: list[str]):  return f'{items[0]}'
     def logic_is(self, items): return f'Object({items[0]}).__is__({items[1]})'
     def logic_or(self, items): return f"({f' or '.join(items)})" if len(items) > 1 else items[0]
     def logic_and(self, items): return f"({f' and '.join(items)})" if len(items) > 1 else items[0]

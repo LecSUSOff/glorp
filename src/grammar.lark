@@ -52,6 +52,7 @@ throw: "throw" expression
 yield_stmt: ">>" expression
 
 safe_div: expression "/" expression
+int_div: expression "%" expression
 
 _type: ("func"|"op" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "bool" | "null" | "list" ("[" _type_anotation "]")? | "dict" ("<" _type_anotation ":" _type_anotation ">")? | "any" | "iter") "?"?
 
@@ -60,7 +61,7 @@ _type_anotation: "("? _type ("," _type)* ")"?
 body: ("{" (local_statement "\n")* "}") | ("->" local_statement) | (return_stmnt)
 
 parameters: (name | default_param) ("," (name | default_param))*
-expression: quick_foreach | logic_or | logic_is | safe_div
+expression: quick_foreach | logic_or | logic_is
 
 logic_is: (name | expression) "is" (name | expression)
 logic_or: logic_and ("or" logic_and)*
@@ -86,6 +87,8 @@ factor: "-" factor    -> neg
       | element
       | num_range
       | take_stmt
+      | safe_div
+      | int_div
 
 ?op_exp: OP_ADD | OP_SUB
 OP_ADD: "+"
@@ -112,7 +115,7 @@ num_range: "[" expression "," (expression ",")? "..." "," expression "]"
 dictionary: "{" dictionary_elements "}"
 element: NAME "[" expression "]"
 
-name: ((_type_anotation " ")? (NAME | element)("."(NAME | element))*) | "@"
+name: ((_type_anotation " ")? (NAME | element)("."(NAME | element))*)
 symbol: _type_anotation? /[\+\-\*\/\$@!%&\|~<>⊕⊗]/+
 
 default_param: name "else" expression 
