@@ -497,7 +497,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         res = (f'class {name}:\n'
         f'    def __str__(self):\n        return \'Container "{name}"\'')
         for param in params:
-            res += f'\n    {param} = \'Field {param} of container {name}\''
+            res += f'\n    class {param}: pass'
         return res
     
     def prop_stmt(self, items):
