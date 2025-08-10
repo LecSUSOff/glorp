@@ -1,0 +1,14 @@
+/* There is no point in this file
+ * For testing purposes only
+ * Might be changed in any time 
+ */
+
+container Fruits {
+    Apple,
+    Banana
+}
+
+fn null Main() {
+    out(Fruits, "\n")
+    out(Fruits.Apple, "\n")
+}

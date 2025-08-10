@@ -183,6 +183,18 @@ class Object:
     def __str__(self): return str(self.__val__)
     __repr__ = __str__
 
+
+class Container_Meta(type):
+    def __repr__(cls):
+        return f"Container {cls.__name__}"
+
+class Field_Meta(type):
+    def __repr__(cls):
+        container = cls.__module__
+        if hasattr(cls, '__qualname__') and '.' in cls.__qualname__:
+            container = cls.__qualname__.split('.')[0]
+        return f"Fied {cls.__name__} of container {container}"
+
 def safe_div(a, b):
     try:
         return a / b
@@ -494,10 +506,9 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     
     def container_def(self, items):
         name, *params = items
-        res = (f'class {name}:\n'
-        f'    def __str__(self):\n        return \'Container "{name}"\'')
+        res = (f'class {name}(metaclass = Container_Meta):\n')
         for param in params:
-            res += f'\n    class {param}: pass'
+            res += f'\n    class {param}(metaclass = Field_Meta): pass'
         return res
     
     def prop_stmt(self, items):
