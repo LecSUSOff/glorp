@@ -1,43 +1,29 @@
 from lark import Lark, Transformer
+import os
 import sys
 import types
 import linecache
+import time
+import random
+import string
+import random
+import os
+
+import lark
+
+start = time.time()
+
+VERSION = "1.1.0"
+
+py_prefix = r"""
 from itertools import islice
-
-class GlorpError(Exception):
-    def __init__(self, message, line=None, column=None):
-        super().__init__(message)
-        self.line = line
-        self.column = column
-        self.message = message
-
-    def __str__(self):
-        if self.line and self.column:
-            return f"[Line {self.line}:{self.column}] {self.message}"
-        elif self.line:
-            return f"[Line {self.line}] {self.message}"
-        return self.message
-
-class GlorpParseError(GlorpError):
-    pass
-
-class GlorpSemanticError(GlorpError):
-    pass
-
-class GlorpRuntimeError(GlorpError):
-    pass
-
-VERSION = "1.0.6"
-
-prefix = r"""
-from typeguard import typechecked
-from itertools import islice
+import linecache
+from types import SimpleNamespace
 import sys
-from typing import *
+import subprocess
+import os
 
-T = TypeVar('T')
-
-def take(n: int, iterable: Iterable[T]) -> Iterator[T]:
+def take(n, iterable):
     def generator():
         count = 0
         for item in iterable:
@@ -45,7 +31,7 @@ def take(n: int, iterable: Iterable[T]) -> Iterator[T]:
                 break
             yield item
             count += 1
-    return generator()
+    return list(generator())
 
 class _GlorpWatcher:
     def __init__(self, initial_value, handler_func):
@@ -61,10 +47,10 @@ class _GlorpWatcher:
         old_val = self._val
         self._val = new_val
         if old_val != new_val:
-            self._handler(new_val)
+            self._handler(new_val, old_val)
 
-def out(*args):
-    output_string = "".join(map(str, args))
+def out(*args, sep=""):
+    output_string = sep.join(map(str, args))
     sys.stdout.write(output_string)
     sys.stdout.flush()
 
@@ -72,21 +58,21 @@ def clear():
     sys.stdout.write("\033[H\033[2J")
     sys.stdout.flush()
 
-def readfile(filename: str) -> str:
+def readfile(filename):
     with open(filename, 'r', encoding='utf8') as f:
         return f.read()
 
-def writefile(filename: str, content: str):
+def writefile(filename, content):
     with open(filename, 'w', encoding='utf8') as f:
         f.write(content)
 
-def read(prompt: str = "") -> str:
+def read(prompt=""):
     return input(prompt)
 
-def read_str(prompt: str = "") -> str:
+def read_str(prompt=""):
     return input(prompt)
 
-def read_int(prompt: str = "") -> int:
+def read_int(prompt=""):
     while True:
         s = input(prompt)
         try:
@@ -94,7 +80,7 @@ def read_int(prompt: str = "") -> int:
         except ValueError:
             out("Invalid input. Please enter a whole number (integer).\n")
 
-def read_float(prompt: str = "") -> float:
+def read_float(prompt=""):
     while True:
         s = input(prompt)
         try:
@@ -102,7 +88,7 @@ def read_float(prompt: str = "") -> float:
         except ValueError:
             out("Invalid input. Please enter a number (e.g., 123 or 45.67).\n")
 
-def read_bool(prompt: str = "") -> bool:
+def read_bool(prompt=""):
     while True:
         s = input(prompt).lower().strip()
         if s in ('true', 't', 'yes', 'y', '1'):
@@ -119,7 +105,6 @@ def grange(start, end, step=None):
     if step == 0:
         raise ValueError("grange() step argument must not be zero")
 
-    # Используем 1e-9 для безопасного сравнения float
     current = float(start)
     end = float(end)
     
@@ -132,68 +117,298 @@ def grange(start, end, step=None):
             yield round(current, 10)
             current += step
 
+def pow(a, b):
+    return a ** b
+
+class NullType:
+    def __repr__(self):
+        return "Null"
+    def __bool__(self):
+        return False
+    def __eq__(self, other):
+        return other is None or isinstance(other, NullType)
+
+class Object:
+    def __init__(self, value):
+        if isinstance(value, Object):
+            self.__val__ = value.__val__
+        else:
+            self.__val__ = value
+
+    def _unwrap(self, other):
+        if isinstance(other, Object):
+            return other.__val__
+        return other
+
+    def __eq__(self, other): return Object(self.__val__ == self._unwrap(other))
+    def __ne__(self, other): return Object(self.__val__ != self._unwrap(other))
+    def __lt__(self, other): return Object(self.__val__ < self._unwrap(other))
+    def __le__(self, other): return Object(self.__val__ <= self._unwrap(other))
+    def __gt__(self, other): return Object(self.__val__ > self._unwrap(other))
+    def __ge__(self, other): return Object(self.__val__ >= self._unwrap(other))
+
+    def __add__(self, other): return Object(self.__val__ + self._unwrap(other))
+    def __sub__(self, other): return Object(self.__val__ - self._unwrap(other))
+    def __mul__(self, other): return Object(self.__val__ * self._unwrap(other))
+    def __truediv__(self, other): return Object(self.__val__ / self._unwrap(other))
+    def __floordiv__(self, other): return Object(self.__val__ // self._unwrap(other)) # For Glorp's %%
+    def __mod__(self, other): return Object(self.__val__ % self._unwrap(other))      # For Glorp's %
+    def __pow__(self, other): return Object(self.__val__ ** self._unwrap(other))
+
+    def __radd__(self, other): return Object(self._unwrap(other) + self.__val__)
+    def __rsub__(self, other): return Object(self._unwrap(other) - self.__val__)
+    def __rmul__(self, other): return Object(self._unwrap(other) * self.__val__)
+    def __rtruediv__(self, other): return Object(self._unwrap(other) / self.__val__)
+    def __rfloordiv__(self, other): return Object(self._unwrap(other) // self.__val__)
+    def __rmod__(self, other): return Object(self._unwrap(other) % self.__val__)
+    def __rpow__(self, other): return Object(self._unwrap(other) ** self.__val__)
+
+    def __is__(self, other):
+        other_val = self._unwrap(other)
+        if isinstance(other_val, type):
+            return isinstance(self.__val__, other_val)
+        return self.__val__ == other_val
+    
+    def __iter__(self):
+        for item in self.__val__:
+            yield Object(item)
+
+    def __getitem__(self, key):
+        return Object(self.__val__[key])
+
+    def __getattr__(self, name):
+        return Object(getattr(self.__val__, name))
+
+    def __str__(self): return str(self.__val__)
+    __repr__ = __str__
+
+def safe_div(a, b):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return float("inf")
+
 true = True
 false = False
+Null = NullType()
+null = NullType()
+num = eval
 
+__glorp_last__ = Null
+__vals__ = []
+
+def update_last(val):
+    global __glorp_last__
+    __glorp_last__ = val
+    __vals__.append(val)
+    return val
 """
 
-grammar = open('grammar.lark', encoding='utf8').read()
+def get_grammar_path():
+    if getattr(sys, 'frozen', False):
+        base_path = sys._MEIPASS # type: ignore
+    else:
+        base_path = os.path.dirname(__file__)
+    
+    return os.path.join(base_path, "grammar.lark")
+
+with open(get_grammar_path(), "r", encoding="utf8") as f:
+    grammar = f.read()
 
 parser = Lark(grammar)
+mainargs = False
+
+immutes = {}
 
 class Glorp(Transformer):
-    def __init__(self):
+    def __init__(self, module_context_name=None):
         super().__init__()
-        self.stats = []
         self.watched_vars = set()
-        self.scopes: list[dict[str, str]] = [{}]
-        self.declared_functions = {
+        self.declared_symbols = {
             "out", "clear",
             "read", "read_str", "read_int", "read_float", "read_bool",
-            "readfile", "writefile", "str", "int"
+            "readfile", "writefile", "str", "int", "this"
+        }
+        self.private_vars = {}
+        self.module_context_name = module_context_name
+        self.ops = {
+            "^" : "pow"
         }
 
-    def enter_scope(self):
-        self.scopes.append({})
+    def _generate_mangled_name(self, original_name, context):
+        suffix = ''.join(random.choices(string.ascii_lowercase + string.digits, k=8))
+        return f"_{self.module_context_name}_{context}_{original_name}_{suffix}"
+    
+    def _generate_type_prefix(self, arg_string: str) -> str:
+        arg_string = arg_string.strip()
+        if not arg_string:
+            return (
+                "def __init__(self):\n"
+                "    pass\n\n"
+                "def __eq__(self, other):\n"
+                "    return isinstance(other, type(self))\n\n"
+                "def __is__(self, label):\n"
+                "   return label in self.state or self.type == label\n\n"
+            )
 
-    def exit_scope(self):
-        if len(self.scopes) > 1:
-            self.scopes.pop()
+        parts = [part.strip() for part in arg_string.split(",") if part.strip()]
 
-    def declare_variable(self, name: str, py_type: str, line=None, column=None):
-        current_scope = self.scopes[-1]
-        if name in current_scope:
-            raise GlorpSemanticError(f"Variable '{name}' is already declared in this scope.", line, column)
-        current_scope[name] = py_type
+        init_args = []
+        assignments = []
+        arg_names = []
 
-    def find_variable_type(self, name: str) -> str | None:
-        for scope in reversed(self.scopes):
-            if name in scope:
-                return scope[name]
-        return None
+        for part in parts:
+            if "=" in part:
+                var, default = part.split("=", 1)
+                var = var.strip()
+                default = default.strip()
+                init_args.append(f"{var}={default}")
+            else:
+                var = part
+                init_args.append(var)
+            assignments.append(f"self.{var} = {var}")
+            arg_names.append(var)
 
-    def _indent(self, text_block, indent_str="    "):
-        return "\n".join(indent_str + line for line in text_block.split('\n'))
+        header = f"def __init__(self, {', '.join(init_args)}):"
+        body = "\n".join(f"    {line}" for line in assignments)
+        init_block = f"{header}\n{body}"
 
-    def _py_type(self, type_token):
-        glorp_type = type_token
-        match glorp_type:
-            case "Int": return "int"
-            case "Float": return "float"
-            case "Str": return "str"
-            case "Null": return "None"
-            case "Bool": return "bool"
-            case "List": return "list"
-            case "Dict": return "dict"
-        raise GlorpSemanticError(
-            f"Unknown type '{glorp_type}'",
-            line=type_token.line,
-            column=type_token.column
+        eq_conditions = " and ".join([f"self.{var} == other.{var}" for var in arg_names])
+        eq_block = (
+            "def __eq__(self, other):\n"
+            "    if not isinstance(other, type(self)): return False\n"
+            f"    return {eq_conditions}"
+        )
+        is_block = (
+            "def __is__(self, other):\n"
+            "   if self == other: return True\n"
+            "   if isinstance(other, type):\n"
+            "       return isinstance(self, other)\n"
+            "   return any(value == other for value in self.__dict__.values())\n"
+        )
+        repr_str = (
+            "def __str__(self):\n"
+            "   args = ', '.join(map(str, self.__dict__.values()))\n"
+            "   return f\"{self.__class__.__name__}({args})\"\n"
+            "__repr__ = __str__"
+        )
+        this_property = (
+            "@property\n"
+            "def this(self):\n"
+            "    return self\n"
         )
 
+        return f"{init_block}\n\n{eq_block}\n\n{is_block}\n\n{repr_str}\n\n{this_property}"
+
+
     def name(self, n):
-        var_name = '.'.join(i.value for i in n)
-        return var_name
+        if n == []: return '__glorp_last__'
+        def get_value(item):
+            if hasattr(item, 'value'):
+                return item.value
+            return str(item)
+
+        first_part_name = get_value(n[0])
+        
+        mangled_first_part = None
+
+        if first_part_name in self.private_vars or first_part_name in immutes:
+            if first_part_name in self.private_vars: mangled_name = self.private_vars[first_part_name]
+            else: mangled_name = immutes[first_part_name]
+            
+            if self.module_context_name:
+                mangled_first_part = f"{mangled_name}"
+            else:
+                mangled_first_part = mangled_name
+        else:
+            mangled_first_part = first_part_name
+            
+        rest_parts = [get_value(part) for part in n[1:]]
+        full_name = ".".join([mangled_first_part] + rest_parts)
+        
+        return full_name
+
+    def private(self, items):
+        var_name, expression_str = items
+        if var_name in self.private_vars:
+            print(f"Warning: Private variable '{var_name}' is being redefined.")
+        mangled_name = self._generate_mangled_name(var_name, "private")
+        self.private_vars[var_name] = mangled_name
+        return f"{mangled_name} = {expression_str}"
+    
+    def immute(self, items):
+        var_name, expression_str = items
+        if var_name in self.private_vars:
+            print(f"Warning: Private variable '{var_name}' is being redefined.")
+        mangled_name = self._generate_mangled_name(var_name, "constant")
+        immutes[var_name] = mangled_name
+        return f"{mangled_name} = {expression_str}"
+    
+    def lambda_call(self, items):
+        expr_str = items[0]
+        arg_str = items[1]
+        
+        arg_count = len(arg_str.split(','))
+        arg_names = [chr(97 + i) for i in range(arg_count)]
+
+        fn_code = f"(lambda {', '.join(arg_names)}: {expr_str})({arg_str})"
+
+        return fn_code
+
+
+    def import_stmt(self, items):
+        path = items[-1].split('.')
+        module_path = "/".join(path)
+        module_name = path[-1] if len(items) == 1 else items[0]
+        self.declared_symbols.add(module_name)
+        
+        module_fake_filename = f"<glorp_{module_path}_module>"
+
+        try:
+            with open(f"{module_path}.glorp", "r", encoding="utf8") as f:
+                module_source = f.read()
+        except FileNotFoundError:
+            raise GlorpError(f"Module '{'/'.join(items)}' not found.")
+        
+        module_transformer = Glorp(module_context_name=module_name)
+        tree = parser.parse(module_source)
+        module_py_code = module_transformer.transform(tree)
+
+        escaped_module_code = repr(module_py_code)
+
+        return f"""
+{module_name} = SimpleNamespace()
+_glorp_module_code = {escaped_module_code}
+
+_glorp_exec_dict = globals().copy()
+_glorp_initial_keys = set(_glorp_exec_dict.keys())
+
+_glorp_module_lines = [line + '\\n' for line in _glorp_module_code.splitlines()]
+linecache.cache['{module_fake_filename}'] = (len(_glorp_module_code), None, _glorp_module_lines, '{module_fake_filename}')
+
+exec(compile(_glorp_module_code, '{module_fake_filename}', 'exec'), _glorp_exec_dict)
+
+for key, value in _glorp_exec_dict.items():
+    if key not in _glorp_initial_keys:
+        setattr({module_name}, key, value)
+
+del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lines
+"""
+    
+    def py_import(self, items):
+        self.declared_symbols.add(items[0])
+        if len(items) == 1:
+            return f'import {items[0]}'
+        return f'import {items[1]} as {items[0]}'
+
+    def named_arg(self, items):
+        return f'{items[0]} = {items[1]}'
+    
+    def default_param(self, items):
+        return f'{items[0]} = {items[1]}'
+    
+    def _indent(self, text_block, indent_str="    "):
+        return "\n".join(indent_str + line for line in text_block.split('\n'))
 
     def num_range(self, items):
         if len(items) == 2:
@@ -205,23 +420,19 @@ class Glorp(Transformer):
             mid_expr = str(items[1])
             end_expr = str(items[2])
             return f"grange({start_expr}, {end_expr}, {mid_expr} - {start_expr})"
+        
+    def list_comprehension(self, items):
+        generator_expression = items[0]
+        return f'list({generator_expression})'
 
     def watch_stmt(self, items):
-        glorp_type, var_name_token, initial_value, handler_code = items
-        var_name = var_name_token
-        
+        var_name, initial_value, handler_code = items
         self.watched_vars.add(var_name)
-        py_type = self._py_type(glorp_type)
-        self.declare_variable(var_name, py_type)
 
         handler_code_block = "\n".join(handler_code) if isinstance(handler_code, list) else handler_code
         handler_func_name = f"_glorp_handler_for_{var_name}"
 
-        self.enter_scope()
-        self.declare_variable(var_name, py_type)
-        handler_func = f"def {handler_func_name}({var_name}):\n{self._indent(handler_code_block)}"
-        self.exit_scope()
-
+        handler_func = f"def {handler_func_name}(old, new):\n{self._indent(handler_code_block)}"
         watcher_instance = f"{var_name} = _GlorpWatcher({initial_value}, {handler_func_name})"
         return f"{handler_func}\n{watcher_instance}"
 
@@ -231,55 +442,11 @@ class Glorp(Transformer):
     def global_statement(self, items):
         return items[0]
 
-    def import_stmt(self, items):
-        module_name = items[0]
-        module_transformer = Glorp()
-        try:
-            with open(f'{module_name}.glorp', 'r', encoding='utf8') as f:
-                module_source = f.read()
-            tree = parser.parse(module_source)
-            transformed_body = module_transformer.transform(tree)
-        except FileNotFoundError:
-            raise GlorpError(f"Module '{module_name}' not found.")
-        
-        stats_to_delete = module_transformer.stats
-        class_body = self._indent(transformed_body) if transformed_body else "    pass"
-        del_statements = [f"del {var}" for var in stats_to_delete]
-        cleanup_body = self._indent('\n'.join(del_statements))
-        return f"class {module_name}:\n{class_body}\n\n{cleanup_body}" if cleanup_body else f"class {module_name}:\n{class_body}"
-
-    def private(self, items):
-        type_token, var_name_token, expression_str = items
-        var_name = var_name_token
-        self.stats.append(var_name)
-        py_type = self._py_type(type_token)
-        self.declare_variable(var_name, py_type)
-        return f"{var_name}: {py_type} = {expression_str}"
-
-    def var_change(self, items):
-        var_name, expression = items[0], items[1]
-        var_py_type = self.find_variable_type(var_name)
-        if var_py_type is None:
-            raise GlorpSemanticError(f"Variable not found {var_name}")
-        
-        return f'{var_name}: {var_py_type} = {var_py_type}({expression})'
-
     def var_decl(self, items):
-        type_token, var_name_token = items[0], items[1]
-        var_name = var_name_token
-        py_type = self._py_type(type_token)
-        
-        self.declare_variable(var_name, py_type)
-        
-        if len(items) < 3:
-            return f'{var_name}: {py_type} = None'
-        
-        expression_str = items[2]
-        if var_name in self.watched_vars:
-            return f"{var_name}.value = {expression_str}"
-        else:
-            return f"{var_name}: {py_type} = {py_type}({expression_str})"
-
+        if items[0] in immutes.values(): raise GlorpSemanticError("Trying to change immutable " + items[0].split('_')[-2])
+        self.declared_symbols.add(items[0])
+        return f'{items[0]} = {items[1]}'
+    
     def try_stmt(self, items):
         return f"try:\n{self._format_block(items[0])}\nexcept Exception as exception:\n{self._format_block(items[1])}"
 
@@ -289,36 +456,49 @@ class Glorp(Transformer):
     def yield_stmt(self, items):
         return f'yield {items[0]}'
 
-    def func_short(self, items):
-        return_type, func_name_token, *rest = items
-        func_name = func_name_token
-        if func_name in self.declared_functions:
+    def func(self, items):
+        func_name, *rest = items
+        if func_name in self.declared_symbols:
             print(f"Warning: Redefining function '{func_name}'")
-        self.declared_functions.add(func_name)
-
-        self.enter_scope()
-        params_str = self.parameters(rest[0]) if len(rest) > 1 else ""
-        expression_str = rest[-1]
-        py_return_type = self._py_type(return_type)
-        self.exit_scope()
+        self.declared_symbols.add(func_name)
         
-        return f"@typechecked\ndef {func_name}({params_str}) -> {py_return_type}:\n    return {expression_str}"
-
-    def func_long(self, items):
-        return_type, func_name_token, *rest = items
-        func_name = func_name_token
-        if func_name in self.declared_functions:
-            print(f"Warning: Redefining function '{func_name}'")
-        self.declared_functions.add(func_name)
-        
-        self.enter_scope()
-        params_str = self.parameters(rest[0]) if len(rest) > 1 else ""
-        body_statements = rest[-1]
-        py_return_type = self._py_type(return_type)
+        params_str = (rest[0]) if len(rest) > 1 else ""
+        body_statements = rest[-1] + ["return null"]
         indented_body = "\n".join(self._indent(s) for s in body_statements) if body_statements else "    pass"
-        self.exit_scope()
+        global mainargs
+
+        if func_name == "Main" and params_str != "": mainargs = True
         
-        return f"@typechecked\ndef {func_name}({params_str}) -> {py_return_type}:\n{indented_body}"
+        return f"\ndef {func_name}({params_str}):\n{indented_body}"
+    
+    def class_def(self, items):
+        if len(items) == 3:
+            if ',' in items[1]:
+                name, args, body_lines = items
+                parent = ''
+            else:
+                name, parent, body_lines = items
+                args = ''
+        elif len(items) == 4:
+            name, parent, args, body_lines = items
+        else:
+            name, body_lines = items
+            args = parent = ''
+
+        self.declared_symbols.add(name)
+
+        return f'class {name}({parent}):\n{self._format_block(self._generate_type_prefix(args).split('\n'))}\n{self._format_block(body_lines)}'
+    
+    def container_def(self, items):
+        name, *params = items
+        res = (f'class {name}:\n'
+        f'    def __str__(self):\n        return \'Container "{name}"\'')
+        for param in params:
+            res += f'\n    {param} = \'Field {param} of container {name}\''
+        return res
+    
+    def prop_stmt(self, items):
+        return f'@property\ndef {items[0]}(this):\n{self._format_block(items[1])}'
 
     def body(self, items):
         return items
@@ -329,18 +509,27 @@ class Glorp(Transformer):
     def return_stmnt(self, items):
         return f'return {items[0]}'
     
-    def switch_case(self, items):
+    def switch_case(self, items: list[str]):
         exp = items[0]
         items = items[1:]
-        code = [f'match {exp}:']
+        code = [f"_val = {exp}", f"match _val:"]
         count = len(items)
         has_default = count % 2 == 1
         limit = count - 1 if has_default else count
+
         for i in range(0, limit, 2):
             condition, body = items[i], items[i+1]
-            code.append(f"  case {condition}:\n{self._format_block(body.split('\n'))}")
+            if 'grange' in condition or '[' in condition:
+                code.append(
+                    f"    case _ if _val in {condition} or _val == {condition}:\n   {self._format_block(body)}"
+                )
+            else:
+                code.append(
+                    f"    case _ if _val == {condition}:\n   {self._format_block(body)}"
+                )
+
         if has_default:
-            code.append(f"  case _:\n{self._format_block(items[-1].split('\n'))}")
+            code.append(f"    case _:\n {self._format_block(items[-1])}")
         return "\n".join(code)
 
     def if_stmnt(self, items):
@@ -370,6 +559,7 @@ class Glorp(Transformer):
 
     def for_each(self, items):
         var_name, object_name, body_statements = items
+        self.declared_symbols.add(var_name)
         return f'for {var_name} in {object_name}:\n{self._format_block(body_statements)}'
 
     def quick_foreach(self, items):
@@ -381,26 +571,25 @@ class Glorp(Transformer):
             return f'({statement} for {var_name} in {object_name} if {if_block})'
         else:
             var_name, object_name, if_block, statement, else_block = items
-            return f'({statement} if {if_block} else {else_block} for {var_name} in {object_name})'
+            return f'(({statement} if {if_block} else {else_block}) for {var_name} in {object_name})'
 
     def parameters(self, items):
-        params_list = []
-        for i in range(0, len(items), 2):
-            param_type_token, param_name_token = items[i], items[i+1]
-            py_type = self._py_type(param_type_token)
-            param_name = param_name_token
-            self.declare_variable(param_name, py_type)
-            params_list.append(f"{param_name}: {py_type}")
-        return ", ".join(params_list)
+        return ", ".join(map(str, items))
 
     def call(self, items):
-        func_name = items[0]
-        if '.' not in func_name and func_name not in self.declared_functions:
-            raise GlorpSemanticError(f"Call to undefined function '{func_name}'.")
+        func_name: str = items[0]
         args_str = items[1] if len(items) > 1 else ""
         return f"{func_name}({args_str})"
+    
+    def neg(self, n): return f"-{n[0]}"
+    def pos(self, n): return str(n[0])
 
-    def expression(self, items): return items[0]
+
+    def safe_div(self, items): return f"safe_div({items[0]}, {items[1]})"
+    def globalise(self, items): return f'global {items[0]}'
+    def symbol(self, items): return items[0]
+    def expression(self, items: list[str]):  return f'update_last({items[0]})'
+    def logic_is(self, items): return f'Object({items[0]}).__is__({items[1]})'
     def logic_or(self, items): return f"({f' or '.join(items)})" if len(items) > 1 else items[0]
     def logic_and(self, items): return f"({f' and '.join(items)})" if len(items) > 1 else items[0]
     def logic_not(self, items): return items[0]
@@ -431,7 +620,6 @@ class Glorp(Transformer):
     def OP_LT(self, token): return token.value
     def OP_GE(self, token): return token.value
     def OP_LE(self, token): return token.value
-    def TYPE(self, t): return t
     def NAME(self, n): return n
     def INF(self, _): return 'float("inf")'
     def pos_inf(self, _): return 'float("inf")'
@@ -462,8 +650,6 @@ class GlorpSemanticError(GlorpError):
 class GlorpRuntimeError(GlorpError):
     pass
 
-
-
 def handle_runtime_error(e: Exception, fake_filename: str, source_file: str):
     import traceback
     tb = e.__traceback__
@@ -472,23 +658,21 @@ def handle_runtime_error(e: Exception, fake_filename: str, source_file: str):
     for frame in traceback.extract_tb(tb):
         if frame.filename == fake_filename:
             last_glorp_frame = frame
-            break
 
     error_type = type(e).__name__
     error_msg = str(e)
 
     if last_glorp_frame:
-        line_num = last_glorp_frame.lineno
-        code_line = linecache.getline(fake_filename, line_num).strip()
+        line_num: int | None = last_glorp_frame.lineno
+        code_line: str = linecache.getline(fake_filename, line_num if line_num else 0).strip()
 
         friendly_message = (
             f"Runtime Error in '{source_file}'\n\n"
             f"  Error Type: {error_type}\n"
             f"  Details: {error_msg}\n\n"
-            f"This error occurred while executing the logic that corresponds to line {line_num} "
-            f"of the generated Python code.\n"
-            f"The problematic operation in Python was:\n"
-            f"  > {code_line}\n\n"
+            f"The error occurred while executing the logic from your script.\n"
+            f"The problematic operation in the generated Python code was:\n"
+            f"  [{line_num}] > {code_line}\n\n"
             f"Common causes for this error include division by zero, accessing a list element that doesn't exist, or type mismatches during an operation."
         )
         raise GlorpRuntimeError(friendly_message) from None
@@ -502,17 +686,16 @@ def handle_runtime_error(e: Exception, fake_filename: str, source_file: str):
         )
         raise GlorpRuntimeError(friendly_message) from None
 
-
 def main():
     if len(sys.argv) < 2:
-        print("Usage: glorp <source_file.glorp> (you may use some additional flags)")
+        print("Usage: glorp [run | to-py] <source_file.glorp> (you may use some additional flags)")
         return
 
     if sys.argv[1] in ['--ver', '-v', '--version']:
         print(VERSION)
         return
         
-    source_file = sys.argv[1]
+    source_file = sys.argv[2]
 
     try:
         try:
@@ -525,17 +708,27 @@ def main():
         try:
             tree = parser.parse(source_code)
         except Exception as e:
-            context = e.get_context(source_code, 40) if hasattr(e, 'get_context') else ''
+            context = e.get_context(source_code, 40) if hasattr(e, 'get_context') else '' # type: ignore
             error_details = str(e)
             message = f"Invalid syntax.\n> {context}\nDetails: {error_details}"
             raise GlorpParseError(message, line=getattr(e, 'line', None), column=getattr(e, 'column', None))
             
-        transformer = Glorp()
-        py_code = prefix + transformer.transform(tree)
+        transformer = Glorp("Runtime")
+        py_code = py_prefix + transformer.transform(tree)
         
-        py_code += '\n\nMain()\n'
+        py_code += f'''
 
-        print(py_code)
+try:
+    res = {"Main(sys.argv)" if mainargs else "Main()"}
+    if res: print("Programm finished with the result of", res)
+except KeyboardInterrupt:
+    print("Interrupted by user.")
+    sys.exit(1)
+'''
+
+        print(f'Took {time.time() - start} seconds to transpile\n' if '-o' in sys.argv else '', end='')
+
+        start2 = time.time()
 
         module_name = "glorp_runtime_module"
         fake_filename = f"<{source_file}>"
@@ -548,18 +741,31 @@ def main():
         sys.modules[module_name] = glorp_module
         
         try:
-            exec(py_code, glorp_module.__dict__)
+            print(py_code if '-d' in sys.argv else '', end = '')
+            print(tree.pretty(' ') if '-t' in sys.argv else '', end = '')
+            match sys.argv[1]:
+                case 'to-py':
+                    with open(source_file.rstrip('.glorp') + '.py', 'w') as f:
+                        f.write(py_code)
+                case 'run':
+                    compiled_code = compile(py_code, fake_filename, 'exec')
+                    exec(compiled_code, glorp_module.__dict__)
+            
         except Exception as e:
             handle_runtime_error(e, fake_filename, source_file)
+        
+        print(f'\nTook {time.time() - start2} seconds to execute' if '-o' in sys.argv else '', end='')
+        print(f'\nTook {time.time() - start} seconds in total' if '-o' in sys.argv else '', end='')
 
     except GlorpError as e:
         print(f"--- Glorp Error ---", file=sys.stderr)
         print(f"{e}", file=sys.stderr)
         sys.exit(1)
 
-    except Exception as e:
-        print(f"--- An Unexpected Internal Error Occurred ---", file=sys.stderr)
-        print(e)
+    except lark.exceptions.VisitError as e:
+        print(f"--- Glorp Syntax Error ---", file=sys.stderr)
+        print(f"{e.orig_exc}", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
