@@ -1,6 +1,6 @@
 # --- Основная информация о сайте ---
 site_name: Glorp Language
-site_url: https://ВАШ_ЛОГИН.github.io/ВАШ_РЕПОЗИТОРИЙ/ # Замените на реальный URL
+site_url: https://github.com/LecSUSOff/glorp
 site_author: 'Alexey'
 copyright: 'Copyright © 2025 Alexey Zhukovski'
 
@@ -34,4 +34,5 @@ theme:
 
 # --- Структура навигации (меню сайта) ---
 nav:
-  - 'Home': 'index.md'
+  - 'Introduction': 'introduction.md'
+  - 'Getting started': 'getting-started.md'
