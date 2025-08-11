@@ -3,12 +3,17 @@
  * Might be changed in any time 
  */
 
-container Fruits {
-    Apple,
-    Banana
-}
-
 fn null Main() {
-    out(Fruits, "\n")
-    out(Fruits.Apple, "\n")
+    day = "Sunday"
+    switch day {
+        case "Sunday" or "Saturday" {
+            out("It's the weekend!")
+        }
+        case "Monday" {
+            out("Back to work.")
+        }
+    }
+    else {
+        out("It's a weekday.")
+    }
 }

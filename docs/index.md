@@ -181,16 +181,15 @@ The `switch` statement checks a value against a series of `case` blocks.
 ```glorp
 day = "Monday"
 switch day {
-    case "Saturday"
-    case "Sunday" {
+    case "Sunday" or "Saturday" {
         out("It's the weekend!")
     }
     case "Monday" {
         out("Back to work.")
     }
-    else {
-        out("It's a weekday.")
-    }
+}
+else {
+    out("It's a weekday.")
 }
 ```
 
