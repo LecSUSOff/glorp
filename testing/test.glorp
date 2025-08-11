@@ -4,16 +4,5 @@
  */
 
 fn null Main() {
-    day = "Sunday"
-    switch day {
-        case "Sunday" or "Saturday" {
-            out("It's the weekend!")
-        }
-        case "Monday" {
-            out("Back to work.")
-        }
-    }
-    else {
-        out("It's a weekday.")
-    }
+    val = 1 + 2 / 3 * 4 - 5
 }

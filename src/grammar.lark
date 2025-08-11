@@ -54,7 +54,7 @@ yield_stmt: ">>" expression
 safe_div: expression "/" expression
 int_div: expression "%" expression
 
-_type: ("func"|"op" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "bool" | "null" | "list" ("[" _type_anotation "]")? | "dict" ("<" _type_anotation ":" _type_anotation ">")? | "any" | "iter") "?"?
+_type: ("func" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "bool" | "null" | "list" ("[" _type_anotation "]")? | "dict" ("<" _type_anotation ":" _type_anotation ">")? | "any" | "iter") "?"?
 
 _type_anotation: "("? _type ("," _type)* ")"?
 
@@ -71,7 +71,9 @@ logic_not: "not" logic_not -> logic_unary_not
 comparison: arith_exp (op_bool arith_exp)?
 
 arith_exp: term (op_exp term)*
-term: factor (op_term factor)*
+term:   safe_div
+      | int_div
+      | factor (op_term factor)*
 factor: "-" factor    -> neg
       | "+" factor    -> pos
       | NUMBER
@@ -87,8 +89,6 @@ factor: "-" factor    -> neg
       | element
       | num_range
       | take_stmt
-      | safe_div
-      | int_div
 
 ?op_exp: OP_ADD | OP_SUB
 OP_ADD: "+"
