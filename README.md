@@ -39,7 +39,7 @@ The core philosophies are:
 
 ✨ **Seamless Python Interop**: Use any Python library as if it were native to Glorp.
 ```glorp
-use py.numpy as np
+use np for py.numpy
 
 fn null Main() {
     arr = np.array([1, 2, 3])
