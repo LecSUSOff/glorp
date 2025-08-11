@@ -1,7 +1,3 @@
-Of course. Here is the complete documentation in a single `index.md` file, designed for maximum readability and ease of navigation.
-
-***
-
 # The Glorp Programming Language Documentation
 
 Welcome to the official documentation for the Glorp programming language. This guide provides a comprehensive overview, from basic syntax to advanced features.
