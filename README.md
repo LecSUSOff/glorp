@@ -52,7 +52,7 @@ fn null Main() {
 watch score = 0 {
     out("New score: " + score)
 }
-score = 100 // Prints "New score: 100"
+score.value = 100 // Prints "New score: 100"
 ```
 
 💎 **Modern, Concise Syntax**: Enjoy features like immutable declarations (`:=`), list comprehensions, and powerful `switch` statements.
