@@ -1,0 +1,141 @@
+start: global_statement+
+
+global_statement: py_import | import_stmt | var_decl | func | private | watch_stmt | class_def | container_def | immute
+
+local_statement:    var_decl 
+                  | return_stmnt 
+                  | if_stmnt 
+                  | while_stmnt 
+                  | for_loop 
+                  | for_each 
+                  | watch_stmt  
+                  | call
+                  | try_stmt 
+                  | throw
+                  | yield_stmt
+                  | switch_case
+                  | global_statement
+                  | lambda_call
+                  | prop_stmt
+                  | globalise
+ 
+import_stmt: "use" (name ("=" | "for"))? name
+py_import: "use" (name ("=" | "for"))? "py."name
+
+lambda_call: "(" expression ")" "(" [arguments] ")"
+globalise: "global" name
+
+named_arg: name ":" expression
+list_comprehension: "[" quick_foreach "]"
+var_decl: (name | element) "=" expression
+private: "private" name "=" expression
+immute: ("immutable" name ("="|":=") expression) | ("immutable"? name ":=" expression)
+watch_stmt: "watch" name "=" expression body
+return_stmnt: "=>" expression
+switch_case: "switch" expression "{" ("case"? expression body)* "}" ("else" body)?
+take_stmt: "take" expression "from" expression
+
+func: "fn" name "(" parameters? ")" body
+class_def: "class" name (":" name)? ("(" parameters ")")? body
+prop_stmt: "prop" name body
+
+container_def: "container" name "{" name ("," name)* "}"
+
+if_stmnt:     "if" expression body ("elif" expression body )* ("else" body)?
+            | "when" expression body
+while_stmnt: "while" expression body
+for_loop: "for" name "from" expression ("up" | "down")? "to" expression body 
+for_each: "each" name "in" expression body
+quick_foreach: "each" name "in" expression ("where" expression)? "->" expression ("else" expression)?
+try_stmt: "try" body "catch" body
+throw: "throw" expression
+yield_stmt: ">>" expression
+
+safe_div: expression "/" expression
+int_div: expression "%" expression
+
+_type: ("func"|"op" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "bool" | "null" | "list" ("[" _type_anotation "]")? | "dict" ("<" _type_anotation ":" _type_anotation ">")? | "any" | "iter") "?"?
+
+_type_anotation: "("? _type ("," _type)* ")"?
+
+body: ("{" (local_statement "\n")* "}") | ("->" local_statement) | (return_stmnt)
+
+parameters: (name | default_param) ("," (name | default_param))*
+expression: quick_foreach | logic_or | logic_is
+
+logic_is: (name | expression) "is" (name | expression)
+logic_or: logic_and ("or" logic_and)*
+logic_and: logic_not ("and" logic_not)*
+logic_not: "not" logic_not -> logic_unary_not
+         | comparison
+comparison: arith_exp (op_bool arith_exp)?
+
+arith_exp: term (op_exp term)*
+term: factor (op_term factor)*
+factor: "-" factor    -> neg
+      | "+" factor    -> pos
+      | NUMBER
+      | INF
+      | STRING
+      | name
+      | "(" expression ")"
+      | call
+      | lambda_call
+      | list_comprehension
+      | array
+      | dictionary
+      | element
+      | num_range
+      | take_stmt
+      | safe_div
+      | int_div
+
+?op_exp: OP_ADD | OP_SUB
+OP_ADD: "+"
+OP_SUB: "-"
+
+?op_term: OP_MUL  | OP_POW
+OP_MUL: "*"
+OP_POW: "^"
+
+?op_bool: OP_EQ | OP_NE | OP_GT | OP_LT | OP_GE | OP_LE
+OP_EQ: "=="
+OP_NE: "!="
+OP_GT: ">"
+OP_LT: "<"
+OP_GE: ">="
+OP_LE: "<="
+
+INF: "Inf" | "Infinity"
+
+call: name "(" [arguments] ")"
+
+array: "[" [array_elements] "]"
+num_range: "[" expression "," (expression ",")? "..." "," expression "]"
+dictionary: "{" dictionary_elements "}"
+element: NAME "[" expression "]"
+
+name: ((_type_anotation " ")? (NAME | element)("."(NAME | element))*)
+symbol: _type_anotation? /[\+\-\*\/\$@!%&\|~<>⊕⊗]/+
+
+default_param: name "else" expression 
+arguments: (expression | named_arg) ("," (expression | named_arg))*
+array_elements: expression ("," expression)*
+dictionary_element: expression ":" expression
+dictionary_elements: dictionary_element ("," dictionary_element)*
+
+%import common.CNAME
+%import common.ESCAPED_STRING
+
+%import common.CNAME -> NAME
+%import common.SIGNED_NUMBER -> NUMBER
+%import common.ESCAPED_STRING -> STRING
+%import common.WS
+
+SINGLE_LINE_COMMENT: /\/\/[^\n]*/
+MULTI_LINE_COMMENT_STD: /\/\*[\s\S]*?\*\//
+
+%ignore SINGLE_LINE_COMMENT
+%ignore MULTI_LINE_COMMENT_STD
+%import common.WS
+%ignore WS
