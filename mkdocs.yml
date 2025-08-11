@@ -34,5 +34,4 @@ theme:
 
 # --- Структура навигации (меню сайта) ---
 nav:
-  - 'Introduction': 'introduction.md'
-  - 'Getting started': 'getting-started.md'
+  - 'Docs': 'index.md'
