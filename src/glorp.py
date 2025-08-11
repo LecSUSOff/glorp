@@ -13,7 +13,7 @@ import lark
 
 start = time.time()
 
-VERSION = "1.1.0"
+VERSION = "Glorp programming Language 1.2"
 
 py_prefix = r"""
 from math import floor
