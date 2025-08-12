@@ -11,6 +11,7 @@ import random
 import os
 
 import lark
+from sympy import li
 
 start = time.time()
 
@@ -476,7 +477,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         self.declared_symbols.add(func_name)
         
         params_str = (rest[0]) if len(rest) > 1 else ""
-        body_statements = rest[-1] + ["return null"]
+        body_statements = rest[-1]
         indented_body = "\n".join(self._indent(s) for s in body_statements) if body_statements else "    pass"
         global mainargs
 
@@ -519,6 +520,10 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         global line
         line += 1
         return f'{items[0]} #Expected line in your glorp file: {line} (This feature is experimental and might not work with multiline comments and empty lines)'
+
+
+    def empty_line(self, n):
+        return ''
 
     def return_stmnt(self, items):
         return f'return {items[0]}'
@@ -597,16 +602,6 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     
     def neg(self, n): return f"-{n[0]}"
     def pos(self, n): return str(n[0])
-
-    def comment_element(self, n): return ''
-    def sl_comment(self, n):
-        global line
-        line += 1
-        return ''
-    def ml_comment(self, n):
-        global line
-        line += len(n)
-        return ''
         
     def safe_div(self, items): return f"{items[0]} / {items[1]}"
     def globalise(self, items): return f'global {items[0]}'
