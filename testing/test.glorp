@@ -1,8 +1,6 @@
 /* There is no point in this file
  * For testing purposes only
- * Might be changed in any time 
- */
-
+ * Might be changed in any time */
 fn null Main() {
     val = 1/0
 }

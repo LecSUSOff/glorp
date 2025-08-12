@@ -1,6 +1,6 @@
 start: global_statement+
 
-global_statement: py_import | import_stmt | var_decl | func | private | watch_stmt | class_def | container_def | immute
+global_statement: py_import | import_stmt | var_decl | func | private | watch_stmt | class_def | container_def | immute |sl_comment | ml_comment
 
 local_statement:    var_decl 
                   | return_stmnt 
@@ -116,7 +116,6 @@ dictionary: "{" dictionary_elements "}"
 element: NAME "[" expression "]"
 
 name: ((_type_anotation " ")? (NAME | element)("."(NAME | element))*)
-symbol: _type_anotation? /[\+\-\*\/\$@!%&\|~<>⊕⊗]/+
 
 default_param: name "else" expression 
 arguments: (expression | named_arg) ("," (expression | named_arg))*
@@ -132,10 +131,9 @@ dictionary_elements: dictionary_element ("," dictionary_element)*
 %import common.ESCAPED_STRING -> STRING
 %import common.WS
 
-SINGLE_LINE_COMMENT: /\/\/[^\n]*/
-MULTI_LINE_COMMENT_STD: /\/\*[\s\S]*?\*\//
+comment_element: /[^\n]/*
 
-%ignore SINGLE_LINE_COMMENT
-%ignore MULTI_LINE_COMMENT_STD
-%import common.WS
+sl_comment: "//" comment_element
+ml_comment: "/*" comment_element* "*/"
+
 %ignore WS

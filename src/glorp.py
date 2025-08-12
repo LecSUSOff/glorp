@@ -518,7 +518,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def local_statement(self, items):
         global line
         line += 1
-        return f'{items[0]} #Expected line in your glorp file {line} (This feature is experimental and might not work with comments and/or empty lines)'
+        return f'{items[0]} #Expected line in your glorp file: {line} (This feature is experimental and might not work with multiline comments and empty lines)'
 
     def return_stmnt(self, items):
         return f'return {items[0]}'
@@ -598,7 +598,16 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def neg(self, n): return f"-{n[0]}"
     def pos(self, n): return str(n[0])
 
-
+    def comment_element(self, n): return ''
+    def sl_comment(self, n):
+        global line
+        line += 1
+        return ''
+    def ml_comment(self, n):
+        global line
+        line += len(n)
+        return ''
+        
     def safe_div(self, items): return f"{items[0]} / {items[1]}"
     def globalise(self, items): return f'global {items[0]}'
     def symbol(self, items): return items[0]
@@ -686,7 +695,7 @@ def handle_runtime_error(e: Exception, fake_filename: str, source_file: str):
             f"  Details: {error_msg}\n\n"
             f"The error occurred while executing the logic from your script.\n"
             f"The problematic operation in the generated Python code was:\n"
-            f"  [{line_num}] > {code_line}\n\n"
+            f"  [{line_num}] > {'\n'.join(code_line.split('#'))}\n\n"
             f"Common causes for this error include division by zero, accessing a list element that doesn't exist, or type mismatches during an operation."
         )
         raise GlorpRuntimeError(friendly_message) from None
