@@ -1,3 +1,4 @@
+import glob
 from lark import Lark, Transformer
 import os
 import sys
@@ -12,6 +13,8 @@ import os
 import lark
 
 start = time.time()
+
+line = 1
 
 VERSION = "Glorp programming Language beta 1.2.1"
 
@@ -216,6 +219,8 @@ num = eval
 __glorp_last__ = Null
 __vals__ = []
 """
+
+glorp_prefix = r''''''
 
 grammar = open('src/grammar.lark', encoding='utf8').read()
 
@@ -446,6 +451,8 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         return "\n\n".join(items)
 
     def global_statement(self, items):
+        global line
+        line += 2
         return items[0]
 
     def var_decl(self, items):
@@ -509,7 +516,9 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         return items
 
     def local_statement(self, items):
-        return items[0]
+        global line
+        line += 1
+        return f'{items[0]} #Expected line in your glorp file {line} (This feature is experimental and might not work with comments and/or empty lines)'
 
     def return_stmnt(self, items):
         return f'return {items[0]}'
