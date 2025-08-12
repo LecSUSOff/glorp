@@ -429,7 +429,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         return f'list({generator_expression})'
     
     def int_div(self, items):
-        return f'int_div({items[0]}, {items[1]})'
+        return f'{items[0]} % {items[1]}'
 
     def watch_stmt(self, items):
         var_name, initial_value, handler_code = items
@@ -590,7 +590,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def pos(self, n): return str(n[0])
 
 
-    def safe_div(self, items): return f"safe_div({items[0]}, {items[1]})"
+    def safe_div(self, items): return f"{items[0]} / {items[1]}"
     def globalise(self, items): return f'global {items[0]}'
     def symbol(self, items): return items[0]
     def expression(self, items: list[str]):  return f'{items[0]}'
