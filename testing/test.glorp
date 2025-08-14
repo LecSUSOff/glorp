@@ -1,4 +1,9 @@
+class Phone(user) {
+    verb Call name {
+        => (#"{this.user} is calling {name}")
+    }
+}
 fn null Main() {
-    a = tuple(1, 2, 3)
-    out(a)
+    currentUser = Phone("John")
+    out(currentUser Call currentUser Call "Alex")
 }

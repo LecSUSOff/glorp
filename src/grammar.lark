@@ -17,6 +17,8 @@ local_statement:    var_decl
                   | global_statement
                   | lambda_call
                   | prop_stmt
+                  | verb_stmt
+                  | varb_call
                   | globalise
  
 import_stmt: "use" (name ("=" | "for"))? name
@@ -36,8 +38,12 @@ switch_case: "switch" expression "{" ("case"? expression body)* "}" ("else" body
 take_stmt: "take" expression ((_type_anotation | "value" | "element") "s"?)? "from" expression
 
 func: "fn" name "(" parameters? ")" body
-class_def: "class" name (":" name)? ("(" parameters ")")? body
+class_def: "class" name inherit? ("(" parameters ")")? body
 prop_stmt: "prop" name body
+verb_stmt: "verb" name name body
+varb_call: name " " name (" " | "<-" | "for" | "from" | "using" | "via" | "with" | "->" | "as" | "by" | "through") expression
+
+inherit: ":" name
 
 container_def: "container" name "{" name ("," name)* "}"
 
@@ -58,7 +64,7 @@ _type: ("func" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "b
 
 _type_anotation: "("? _type ("," _type)* ")"?
 
-body: ("{" local_statement ("\n" local_statement)* "}") | ("->" local_statement) | (return_stmnt)
+body: (("{" local_statement? ("\n" local_statement)* "}") | ("->" local_statement) | return_stmnt)?
 
 parameters: (name | default_param) ("," (name | default_param))*
 expression: quick_foreach | logic_or | logic_is
@@ -88,6 +94,7 @@ factor: "-" factor    -> neg
       | array
       | dictionary
       | element
+      | varb_call
       | num_range
       | take_stmt
 

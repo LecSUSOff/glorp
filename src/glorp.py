@@ -488,9 +488,12 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         
         return f"\ndef {func_name}({params_str}):\n{indented_body}"
     
+    def inherit(self, items):
+        return f':{items[0]}'
+    
     def class_def(self, items):
         if len(items) == 3:
-            if ',' in items[1]:
+            if not ':' in items[1]:
                 name, args, body_lines = items
                 parent = ''
             else:
@@ -501,6 +504,8 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         else:
             name, body_lines = items
             args = parent = ''
+
+        parent = parent.strip(':')
 
         self.declared_symbols.add(name)
 
@@ -515,6 +520,12 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     
     def prop_stmt(self, items):
         return f'@property\ndef {items[0]}(this):\n{self._format_block(items[1])}'
+    
+    def verb_stmt(self, items):
+        return f'def {items[0]}(this, {items[1]}):\n{self._format_block(items[2])}'
+    
+    def varb_call(self, items):
+        return f'{items[0]}.{items[1]}({items[2]})'
 
     def body(self, items):
         return items
