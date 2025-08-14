@@ -644,6 +644,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def neg_inf(self, _): return 'float("-inf")'
     def NUMBER(self, num): return float(num.value) if '.' in num.value else int(num.value)
     def STRING(self, s): return s.value
+    def format_string(self, s): return f"f{s[0]}"
 
 class GlorpError(Exception):
     def __init__(self, message, line=None, column=None):

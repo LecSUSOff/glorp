@@ -1,5 +1,5 @@
 class Car(model, color) {
-    prop beep => this.color + " " + this.model + " beeped"
+    prop beep => #"{this.color} {this.model} beeped"
 }
 
 fn null Main() {

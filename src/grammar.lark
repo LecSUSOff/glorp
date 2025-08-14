@@ -79,6 +79,7 @@ factor: "-" factor    -> neg
       | NUMBER
       | INF
       | STRING
+      | format_string
       | name
       | "(" expression ")"
       | call
@@ -109,6 +110,8 @@ OP_LE: "<="
 INF: "Inf" | "Infinity"
 
 call: name "(" [arguments] ")"
+
+format_string: "#" STRING
 
 array: "[" [array_elements] "]"
 num_range: "[" expression "," (expression ",")? "..." "," expression "]"
