@@ -118,7 +118,7 @@ num_range: "[" expression "," (expression ",")? "..." "," expression "]"
 dictionary: "{" dictionary_elements "}"
 element: NAME "[" expression "]"
 
-name: ((_type_anotation " ")? (NAME | element)("."(NAME | element))*)
+name: ((_type_anotation " ")? (NAME | element | call)("."(NAME | element | call))*)
 symbol: _type_anotation? /[\+\-\*\/\$@!%&\|~<>⊕⊗]/+
 
 default_param: name "else" expression 

@@ -1,8 +1,4 @@
-class Car(model, color) {
-    prop beep => #"{this.color} {this.model} beeped"
-}
-
 fn null Main() {
-    c = Car("Red", "Volvo")
-    out(c.beep)
+    a = tuple(1, 2, 3)
+    out(a)
 }

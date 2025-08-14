@@ -103,6 +103,9 @@ def read_bool(prompt=""):
         else:
             out("Invalid input. Please enter 'true' or 'false'.\n")
 
+def tuple(*args):
+    return (args)
+
 def grange(start, end, step=None):
     if step is None:
         step = 1 if end >= start else -1
