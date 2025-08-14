@@ -1,3 +1,8 @@
+class Car(model, color) {
+    prop beep => this.color + " " + this.model + " beeped"
+}
+
 fn null Main() {
-    v = 1/0
+    c = Car("Red", "Volvo")
+    out(c.beep)
 }
