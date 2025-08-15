@@ -136,60 +136,9 @@ class NullType:
     def __eq__(self, other):
         return other is None or isinstance(other, NullType)
 
-class Object:
-    def __init__(self, value):
-        if isinstance(value, Object):
-            self.__val__ = value.__val__
-        else:
-            self.__val__ = value
-
-    def _unwrap(self, other):
-        if isinstance(other, Object):
-            return other.__val__
-        return other
-
-    def __eq__(self, other): return Object(self.__val__ == self._unwrap(other))
-    def __ne__(self, other): return Object(self.__val__ != self._unwrap(other))
-    def __lt__(self, other): return Object(self.__val__ < self._unwrap(other))
-    def __le__(self, other): return Object(self.__val__ <= self._unwrap(other))
-    def __gt__(self, other): return Object(self.__val__ > self._unwrap(other))
-    def __ge__(self, other): return Object(self.__val__ >= self._unwrap(other))
-
-    def __add__(self, other): return Object(self.__val__ + self._unwrap(other))
-    def __sub__(self, other): return Object(self.__val__ - self._unwrap(other))
-    def __mul__(self, other): return Object(self.__val__ * self._unwrap(other))
-    def __truediv__(self, other): return Object(self.__val__ / self._unwrap(other))
-    def __floordiv__(self, other): return Object(self.__val__ // self._unwrap(other)) # For Glorp's %%
-    def __mod__(self, other): return Object(self.__val__ % self._unwrap(other))      # For Glorp's %
-    def __pow__(self, other): return Object(self.__val__ ** self._unwrap(other))
-
-    def __radd__(self, other): return Object(self._unwrap(other) + self.__val__)
-    def __rsub__(self, other): return Object(self._unwrap(other) - self.__val__)
-    def __rmul__(self, other): return Object(self._unwrap(other) * self.__val__)
-    def __rtruediv__(self, other): return Object(self._unwrap(other) / self.__val__)
-    def __rfloordiv__(self, other): return Object(self._unwrap(other) // self.__val__)
-    def __rmod__(self, other): return Object(self._unwrap(other) % self.__val__)
-    def __rpow__(self, other): return Object(self._unwrap(other) ** self.__val__)
-
-    def __is__(self, other):
-        other_val = self._unwrap(other)
-        if isinstance(other_val, type):
-            return isinstance(self.__val__, other_val)
-        return self.__val__ == other_val
-    
-    def __iter__(self):
-        for item in self.__val__:
-            yield Object(item)
-
-    def __getitem__(self, key):
-        return Object(self.__val__[key])
-
-    def __getattr__(self, name):
-        return Object(getattr(self.__val__, name))
-
-    def __str__(self): return str(self.__val__)
-    __repr__ = __str__
-
+class BaseMeta(type):
+    def __repr__(cls):
+        return f"Glorp.ClassObject({cls.__name__})"
 
 class Container_Meta(type):
     def __repr__(cls):
@@ -202,26 +151,19 @@ class Field_Meta(type):
             container = cls.__qualname__.split('.')[0]
         return f"Fied {cls.__name__} of container {container}"
 
-def safe_div(a, b):
-    try:
-        return a / b
-    except ZeroDivisionError:
-        return float("inf")
-
-def int_div(a, b):
-    try:
-        return a % b
-    except ZeroDivisionError:
-        return float("inf")
+class num(float, metaclass = BaseMeta):
+    def __init__(self, value) -> None:
+        self.value = value
+    
+    def __truediv__(self, other) -> float:
+        if other.value == 0:
+            return num("inf")
+        return self.value / other.value
 
 true = True
 false = False
 Null = NullType()
 null = NullType()
-num = eval
-
-__glorp_last__ = Null
-__vals__ = []
 """
 
 glorp_prefix = r''''''
@@ -509,7 +451,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
 
         self.declared_symbols.add(name)
 
-        return f'class {name}({parent}):\n{self._format_block(self._generate_type_prefix(args).split('\n'))}\n{self._format_block(body_lines)}'
+        return f'class {name}({parent}, metaclass = BaseMeta):\n{self._format_block(self._generate_type_prefix(args).split('\n'))}\n{self._format_block(body_lines)}'
     
     def container_def(self, items):
         name, *params = items
@@ -656,7 +598,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def INF(self, _): return 'float("inf")'
     def pos_inf(self, _): return 'float("inf")'
     def neg_inf(self, _): return 'float("-inf")'
-    def NUMBER(self, num): return float(num.value) if '.' in num.value else int(num.value)
+    def NUMBER(self, num): return f'num({num.value})'
     def STRING(self, s): return s.value
     def format_string(self, s): return f"f{s[0]}"
 

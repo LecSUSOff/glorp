@@ -1,9 +1,6 @@
-class Phone(user) {
-    verb Call name {
-        => (#"{this.user} is calling {name}")
-    }
-}
+container Letters{ a, b, c }
+
 fn null Main() {
-    currentUser = Phone("John")
-    out(currentUser Call currentUser Call "Alex")
+    a := 5
+    out(a == Letters.a)
 }
