@@ -17,7 +17,7 @@ start = time.time()
 
 line = 1
 
-VERSION = "Glorp programming Language beta 1.2.2"
+VERSION = "Glorp Programming Language beta 1.2.2"
 
 py_prefix = r"""
 from math import floor
@@ -159,6 +159,12 @@ class num(float, metaclass = BaseMeta):
         if other.value == 0:
             return num("inf")
         return self.value / other.value
+    
+    def __str__(self):
+        val = str(self.value)
+        if val.endswith(".0"):
+            return val.rstrip(".0")
+        return val 
 
 true = True
 false = False
