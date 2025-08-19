@@ -47,7 +47,7 @@ inherit: ":" name
 
 container_def: "container" name "{" name ("," name)* "}"
 
-if_stmnt:     "if" expression body ("elif" expression body )* ("else" body)?
+if_stmnt:     "if" expression body (("elif" | "else if") expression body )* ("else" body)?
             | "when" expression body
 while_stmnt: "while" expression body
 for_loop: "for" name "from" expression ("up" | "down")? "to" expression body 

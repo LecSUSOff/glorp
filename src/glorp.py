@@ -17,7 +17,7 @@ start = time.time()
 
 line = 1
 
-VERSION = "Glorp programming Language beta 1.2.1"
+VERSION = "Glorp programming Language beta 1.2.2"
 
 py_prefix = r"""
 from math import floor
@@ -451,7 +451,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
 
         self.declared_symbols.add(name)
 
-        return f'class {name}({parent}, metaclass = BaseMeta):\n{self._format_block(self._generate_type_prefix(args).split('\n'))}\n{self._format_block(body_lines)}'
+        return f'class {name}({f'{parent},' if parent else ''} metaclass = BaseMeta):\n{self._format_block(self._generate_type_prefix(args).split('\n'))}\n{self._format_block(body_lines)}'
     
     def container_def(self, items):
         name, *params = items

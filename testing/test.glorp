@@ -1,6 +1,6 @@
-container Letters{ a, b, c }
-
 fn null Main() {
-    a := 5
-    out(a == Letters.a)
+    watch a = 5 {
+        out(#"Значение было {old_val}, а стало {new_val}")
+    }
+    a.value = 6
 }
