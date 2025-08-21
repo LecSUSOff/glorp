@@ -1,6 +1,6 @@
 fn null Main() {
     watch a = 5 {
-        out(#"A was {old}, but now it is {new}")
+        out(#"value was {old}, but now it is {new}")
     }
     a.value = 6
 }

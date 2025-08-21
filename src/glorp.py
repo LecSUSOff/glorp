@@ -11,6 +11,7 @@ import random
 import os
 
 import lark
+from numpy import var
 from sympy import li
 
 start = time.time()
@@ -513,6 +514,9 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
             code.append(f"    case _:\n {self._format_block(items[-1])}")
         return "\n".join(code)
 
+    def map_stmt(self, items):
+        return f'''{items[1]}[{items[0]}]'''
+
     def if_stmnt(self, items):
         code = []
         count = len(items)
@@ -585,7 +589,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def array_elements(self, items): return items
     def dictionary_elements(self, items): return items
     def dictionary_element(self, items): return f"{items[0]}: {items[1]}"
-    def element(self, items): return f'{items[0]}[{items[1]}]'
+    def element(self, items): return f'{items[0]}[{items[1].lstrip('num')}]'
     def op_bool(self, items): return items[0]
     def op_exp(self, items): return items[0]
     def op_term(self, items): return items[0]

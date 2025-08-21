@@ -1,0 +1,8 @@
+use py.ollama
+
+model := "gemma3:4b"
+
+fn null Main(args) {
+    prompt = args[-1]
+    out(ollama.generate(model, prompt).response)
+}

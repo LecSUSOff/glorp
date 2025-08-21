@@ -20,6 +20,7 @@ local_statement:    var_decl
                   | verb_stmt
                   | varb_call
                   | globalise
+                  | map_stmt
  
 import_stmt: "use" (name ("=" | "for"))? name
 py_import: "use" (name ("=" | "for"))? "py."name
@@ -35,6 +36,7 @@ immute: ("immutable" name ("="|":=") expression) | ("immutable"? name ":=" expre
 watch_stmt: "watch" name "=" expression body
 return_stmnt: "=>" expression
 switch_case: "switch" expression "{" ("case"? expression body)* "}" ("else" body)?
+map_stmt: "map" expression dictionary
 take_stmt: "take" expression ((_type_anotation | "value" | "element") "s"?)? "from" expression
 
 func: "fn" name "(" parameters? ")" body
@@ -80,6 +82,8 @@ arith_exp: term (op_exp term)*
 term:   safe_div
       | int_div
       | factor (op_term factor)*
+      | map_stmt
+
 factor: "-" factor    -> neg
       | "+" factor    -> pos
       | NUMBER
