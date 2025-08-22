@@ -125,10 +125,6 @@ def grange(start, end, step=None):
 def pow(a, b):
     return a ** b
 
-def map(f, xs):
-    for x in xs:
-        yield f(x)
-
 class NullType:
     def __repr__(self):
         return "Null"
