@@ -1,7 +1,3 @@
 fn null Main() {
-    a = 3
-    out(map a + 1 {
-        5: "Five",
-        4: "Four"
-    })
+    map(out, [1, 2, 3])
 }

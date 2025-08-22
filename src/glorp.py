@@ -1,6 +1,4 @@
-import glob
 from lark import Lark, Transformer
-import os
 import sys
 import types
 import linecache
@@ -11,8 +9,6 @@ import random
 import os
 
 import lark
-from numpy import var
-from sympy import li
 
 start = time.time()
 
@@ -129,6 +125,10 @@ def grange(start, end, step=None):
 def pow(a, b):
     return a ** b
 
+def map(f, xs):
+    for x in xs:
+        yield f(x)
+
 class NullType:
     def __repr__(self):
         return "Null"
@@ -173,7 +173,8 @@ Null = NullType()
 null = NullType()
 """
 
-glorp_prefix = r''''''
+glorp_prefix = r'''
+'''
 
 grammar = open('src/grammar.lark', encoding='utf8').read()
 
@@ -672,6 +673,7 @@ def handle_runtime_error(e: Exception, fake_filename: str, source_file: str):
         raise GlorpRuntimeError(friendly_message) from None
 
 def main():
+    source_code = glorp_prefix
     match len(sys.argv):
         case 2:
             source_file = sys.argv[1]
@@ -687,7 +689,7 @@ def main():
 
     try:
         try:
-            source_code = open(source_file, encoding='utf8').read()
+            source_code += open(source_file, encoding='utf8').read()
             if not source_code.strip():
                 return
         except FileNotFoundError:

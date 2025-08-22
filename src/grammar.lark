@@ -54,7 +54,7 @@ if_stmnt:     "if" expression body (("elif" | "else if") expression body )* ("el
 while_stmnt: "while" expression body
 for_loop: "for" name "from" expression ("up" | "down")? "to" expression body 
 for_each: "each" name "in" expression body
-quick_foreach: "each" name "in" expression ("where" expression)? "->" expression ("else" expression)?
+quick_foreach: "each" name "in" expression ("where" expression)? body ("else" body)?
 try_stmt: "try" body "catch" body
 throw: "throw" expression
 yield_stmt: ">>" expression
@@ -66,7 +66,7 @@ _type: ("func" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "b
 
 _type_anotation: "("? _type ("," _type)* ")"?
 
-body: (("{" local_statement? ("\n" local_statement)* "}") | ("->" local_statement) | return_stmnt)?
+body: (("{" local_statement? ("\n" local_statement)* "}") | ("->" local_statement) | return_stmnt | yield_stmt)?
 
 parameters: (name | default_param) ("," (name | default_param))*
 expression: quick_foreach | logic_or | logic_is
@@ -120,7 +120,7 @@ OP_LE: "<="
 
 INF: "Inf" | "Infinity"
 
-call: name "(" [arguments] ")"
+call: name "(" [arguments] ")" | name "<|" expression
 
 format_string: "#" STRING
 
