@@ -7,6 +7,7 @@ import random
 import string
 import random
 import os
+from rio import *
 
 import lark
 
@@ -16,7 +17,10 @@ line = 1
 
 VERSION = "Glorp Programming Language 1.2 beta 3"
 
+gui = False
+
 py_prefix = r"""
+from rio import *
 from math import floor
 from itertools import islice
 import linecache
@@ -408,7 +412,7 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
     def var_decl(self, items):
         if items[0] in immutes.values(): raise GlorpSemanticError("Trying to change immutable " + items[0].split('_')[-2])
         self.declared_symbols.add(items[0])
-        return f'{items[0]} = {items[1]}'
+        return f'{items[0]}: any = {items[1]}'
     
     def try_stmt(self, items):
         return f"try:\n{self._format_block(items[0])}\nexcept Exception as exception:\n{self._format_block(items[1])}"
@@ -433,6 +437,15 @@ del _glorp_module_code, _glorp_exec_dict, _glorp_initial_keys, _glorp_module_lin
         if func_name == "Main" and params_str != "": mainargs = True
         
         return f"\ndef {func_name}({params_str}):\n{indented_body}"
+    
+    def render(self, items):
+        global gui
+        gui = True
+        code = ''
+        for i in items[0]: code += self._indent(i)
+        return f'''
+class Render(Component):
+{code}'''
     
     def inherit(self, items):
         return f':{items[0]}'
@@ -706,6 +719,9 @@ def main():
 
 try:
     res = {"Main(sys.argv)" if mainargs else "Main()"}
+    {'''app = App(build=Render)
+
+    app.run_in_window()''' if gui else ''}
     if res: print("Programm finished with the result of", res)
 except KeyboardInterrupt:
     print("Interrupted by user.")
@@ -749,6 +765,7 @@ except KeyboardInterrupt:
         sys.exit(1)
 
     except lark.exceptions.VisitError as e:
+        raise e
         print(f"--- Glorp Syntax Error ---", file=sys.stderr)
         print(f"{e.orig_exc}", file=sys.stderr)
         sys.exit(1)

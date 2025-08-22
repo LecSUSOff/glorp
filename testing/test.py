@@ -1,20 +1,12 @@
-class Watcher:
-    def __init__(self, initial_value, handler_func):
-        self._val = initial_value
-        self._handler = handler_func
+from rio import *
 
-    @property
-    def value(self):
-        return self._val
+class Render(Component):
+    clicks: any = 0
+    def _on_press(this):
+        this.clicks = this.clicks + 1
+    def build(this):
+        return (Column((Button(("Click me"), on_press = this._on_press)), (Text((f"You clicked the button {this.clicks} time(s)")))))
 
-    @value.setter
-    def value(self, new_val):
-        old_val = self._val
-        self._val = new_val
-        if old_val != new_val:
-            self._handler(new_val, old_val)
-def on_change(a, b):
-    print(f'Значение было {b}, а стало {a}')
-value = Watcher(5, on_change)
-value.value = 6
+app = App(build=Render)
 
+app.run_in_window()

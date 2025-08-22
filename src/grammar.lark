@@ -1,6 +1,6 @@
 start: global_statement+
 
-global_statement: py_import | import_stmt | var_decl | func | private | watch_stmt | class_def | container_def | immute
+global_statement: py_import | import_stmt | var_decl | func | private | watch_stmt | class_def | container_def | immute | render
 
 local_statement:    var_decl 
                   | return_stmnt 
@@ -67,6 +67,7 @@ _type: ("func" ("<"_type_anotation ":" _type_anotation">")? | "num" | "str" | "b
 _type_anotation: "("? _type ("," _type)* ")"?
 
 body: (("{" local_statement? ("\n" local_statement)* "}") | ("->" local_statement) | return_stmnt | yield_stmt)?
+render: "render" body
 
 parameters: (name | default_param) ("," (name | default_param))*
 expression: quick_foreach | logic_or | logic_is
