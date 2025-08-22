@@ -18,7 +18,7 @@ start = time.time()
 
 line = 1
 
-VERSION = "Glorp Programming Language beta 1.2.2"
+VERSION = "Glorp Programming Language 1.2 beta 3"
 
 py_prefix = r"""
 from math import floor
