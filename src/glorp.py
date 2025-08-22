@@ -15,7 +15,7 @@ start = time.time()
 
 line = 1
 
-VERSION = "Glorp Programming Language 1.2 beta 3"
+VERSION = "Glorp Programming Language 1.2 beta 4"
 
 gui = False
 
