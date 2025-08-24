@@ -1,6 +1,0 @@
-fn null Main()
-
-render {
-    fn build(this) =>
-            Button("Click me")
-}
