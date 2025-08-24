@@ -1,12 +1,6 @@
 fn null Main()
 
 render {
-    clicks = 0
-
-    fn _on_press(this) -> this.clicks = this.clicks + 1
-
-    fn build(this) => Column(
-            Button("Click me", on_press: this._on_press),
-            Text(#"You clicked the button {this.clicks} time(s)")
-        )
+    fn build(this) =>
+            Button("Click me")
 }

@@ -15,7 +15,7 @@ start = time.time()
 
 line = 1
 
-VERSION = "Glorp Programming Language 1.2 beta 4"
+VERSION = "Glorp Programming Language release 1.3"
 
 gui = False
 
@@ -719,7 +719,7 @@ def main():
 
 try:
     res = {"Main(sys.argv)" if mainargs else "Main()"}
-    {'''app = App(build=Render)
+    {f'''app = App(build=Render, name = "{source_file.split('/')[-1].strip('.glorp')}")
 
     app.run_in_window()''' if gui else ''}
     if res: print("Programm finished with the result of", res)
